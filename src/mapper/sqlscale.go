@@ -11,11 +11,8 @@ import (
 
 type SqlScaleOperator interface {
 	InitDbConnection()
-
 	doQuery(sqlStr string) *sql.Rows
-
 	DoQueryParseString(sqlStr string) string
-
 	DoQueryParseMap(sqlStr string) map[string]string
 }
 
