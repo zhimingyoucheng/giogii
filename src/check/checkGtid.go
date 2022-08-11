@@ -25,5 +25,5 @@ func DoCheck() {
 
 	strSql = fmt.Sprint("show master status")
 	SqlScaleOperator.InitDbConnection()
-	SqlScaleOperator.DBQueryDateString(strSql)
+	SqlScaleOperator.DoQueryParseString(strSql)
 }
