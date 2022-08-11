@@ -10,19 +10,13 @@ import (
 )
 
 type SqlScaleOperator interface {
-	// InitDbConnection get connection
 	InitDbConnection()
 
-	// DoQuery query
 	doQuery(sqlStr string) *sql.Rows
 
-	// DoQueryParseString return string
 	DoQueryParseString(sqlStr string) string
 
-	// DoQueryParseMap return map
 	DoQueryParseMap(sqlStr string) map[string]string
-
-	DBQueryDateString(sqlStr string) string
 }
 
 type SqlScaleStruct struct {
@@ -31,11 +25,6 @@ type SqlScaleStruct struct {
 	DBconnIdleTime   time.Duration
 	MaxIdleConns     int
 	dbConnSocketinfo *sql.DB
-}
-
-func (sqlScaleStruct *SqlScaleStruct) DoQueryParseString(sqlStr string) string {
-	//TODO implement me
-	return ""
 }
 
 func (sqlScaleStruct *SqlScaleStruct) InitDbConnection() {
@@ -61,13 +50,13 @@ func (sqlScaleStruct *SqlScaleStruct) doQuery(sqlStr string) *sql.Rows {
 	dbConnection := sqlScaleStruct.dbConnSocketinfo
 	log.Println(fmt.Sprintf("Prepare initialize the SQL statement:%s", sqlStr))
 
-	stmt, err := dbConnection.Prepare(sqlStr)
-	if err != nil {
-		log.Println(fmt.Sprintf("Prepare SQL file ,This is a bad connection. SQL info: %s", sqlStr))
-	}
-	log.Println(fmt.Sprintf("Execute SQL statement queries: %s", sqlStr))
-
-	rows, err := stmt.Query(sqlStr)
+	/*	stmt, err := dbConnection.Prepare(sqlStr)
+		if err != nil {
+			log.Println(fmt.Sprintf("Prepare SQL file ,This is a bad connection. SQL info: %s", sqlStr))
+		}
+		log.Println(fmt.Sprintf("Execute SQL statement queries: %s", sqlStr))
+	*/
+	rows, err := dbConnection.Query(sqlStr)
 	if err != nil {
 		log.Println(fmt.Sprintf("Execute SQL file ,This is a bad connection. SQL info: %s", sqlStr))
 	}
@@ -91,18 +80,16 @@ func (sqlScaleStruct *SqlScaleStruct) DoQueryParseMap(sqlStr string) map[string]
 	return result
 }
 
-func (sqlScaleStruct *SqlScaleStruct) DBQueryDateString(sqlStr string) string {
+func (sqlScaleStruct *SqlScaleStruct) DoQueryParseString(sqlStr string) string {
 	rows := sqlScaleStruct.doQuery(sqlStr)
-	var c string
+	var file, position, binlogDoDB, binlogIgnoreDB, executedGtidSet string
 	for rows.Next() {
-		rows.Scan(&c)
-		set := rows.NextResultSet()
-		log.Println(set)
+		rows.Scan(&file, &position, &binlogDoDB, &binlogIgnoreDB, &executedGtidSet)
 		columns, _ := rows.Columns()
 		for i, v := range columns {
 			log.Println(i, v)
 		}
 
 	}
-	return c
+	return file
 }

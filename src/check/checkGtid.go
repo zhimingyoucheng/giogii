@@ -23,7 +23,7 @@ func ConfigInit() {
 
 func DoCheck() {
 
-	strSql = fmt.Sprint("select host ,user from mysql.user")
+	strSql = fmt.Sprint("show master status")
 	SqlScaleOperator.InitDbConnection()
 	SqlScaleOperator.DBQueryDateString(strSql)
 }
