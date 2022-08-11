@@ -9,10 +9,9 @@ import (
 var strSql string
 var ShowMasterStatus = make(map[string]string)
 var SqlScaleOperator mapper.SqlScaleOperator
-var sqlScaleStruct *mapper.SqlScaleStruct
 
 func ConfigInit() {
-	sqlScaleStruct = &mapper.SqlScaleStruct{
+	var sqlScaleStruct = &mapper.SqlScaleStruct{
 		MaxIdleConns:   2,
 		DirverName:     "mysql",
 		DBconnIdleTime: time.Minute * 3,
@@ -25,5 +24,12 @@ func DoCheck() {
 
 	strSql = fmt.Sprint("show master status")
 	SqlScaleOperator.InitDbConnection()
-	SqlScaleOperator.DoQueryParseString(strSql)
+	masterStatus := SqlScaleOperator.DoQueryParseString(strSql)
+	if masterStatus.File != "" {
+
+	}
+
+	strSql = fmt.Sprint("show slave status")
+	SqlScaleOperator.InitDbConnection()
+
 }

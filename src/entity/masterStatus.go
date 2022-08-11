@@ -1,9 +1,9 @@
 package entity
 
 type MasterStatus struct {
-	file            string
-	position        string
-	binlogDoDB      string
-	binlogIgnoreDB  string
-	executedGtidSet string
+	File            string
+	Position        string
+	BinlogDoDB      string
+	BinlogIgnoreDB  string
+	ExecutedGtidSet string
 }

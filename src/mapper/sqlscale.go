@@ -3,6 +3,7 @@ package mapper
 import (
 	"database/sql"
 	"fmt"
+	"giogii/src/entity"
 	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"os"
@@ -12,7 +13,7 @@ import (
 type SqlScaleOperator interface {
 	InitDbConnection()
 	doQuery(sqlStr string) *sql.Rows
-	DoQueryParseString(sqlStr string) string
+	DoQueryParseString(sqlStr string) entity.MasterStatus
 	DoQueryParseMap(sqlStr string) map[string]string
 }
 
@@ -77,16 +78,11 @@ func (sqlScaleStruct *SqlScaleStruct) DoQueryParseMap(sqlStr string) map[string]
 	return result
 }
 
-func (sqlScaleStruct *SqlScaleStruct) DoQueryParseString(sqlStr string) string {
+func (sqlScaleStruct *SqlScaleStruct) DoQueryParseString(sqlStr string) entity.MasterStatus {
 	rows := sqlScaleStruct.doQuery(sqlStr)
-	var file, position, binlogDoDB, binlogIgnoreDB, executedGtidSet string
+	var masterStatus entity.MasterStatus
 	for rows.Next() {
-		rows.Scan(&file, &position, &binlogDoDB, &binlogIgnoreDB, &executedGtidSet)
-		columns, _ := rows.Columns()
-		for i, v := range columns {
-			log.Println(i, v)
-		}
-
+		rows.Scan(&masterStatus.File, &masterStatus.Position, &masterStatus.BinlogDoDB, &masterStatus.BinlogIgnoreDB, &masterStatus.ExecutedGtidSet)
 	}
-	return file
+	return masterStatus
 }
