@@ -22,3 +22,9 @@ slave_relay_log_info 表存储 slave sql thread 的工作位置
 
 # 返回值 两个集群之间如果无GTID和POS差异则返回0，任何大于0的值都需要发起二次调用
 ```
+
+# MAC编译
+```shell
+cd giogii/
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build
+```
