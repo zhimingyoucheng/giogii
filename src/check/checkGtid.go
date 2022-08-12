@@ -9,24 +9,28 @@ import (
 )
 
 var strSql string
-var ShowMasterStatus = make(map[string]string)
 var MasterSqlScaleOperator mapper.SqlScaleOperator
 var SlaveSqlScaleOperator mapper.SqlScaleOperator
 
 func ConfigInit() {
-	var sqlScaleStruct = &mapper.SqlScaleStruct{
-		MaxIdleConns:   2,
+	var sourceUserInfo = "admin:!QAZ2wsx"
+	var sourceIp = "172.16.76.105"
+	var targetUserInfo = "admin:!QAZ2wsx"
+	var targetIp = "172.16.128.13"
+
+	var masterSqlStruct = &mapper.SqlScaleStruct{
+		MaxIdleConns:   1,
 		DirverName:     "mysql",
 		DBconnIdleTime: time.Minute * 3,
-		ConnInfo:       "admin:!QAZ2wsx@tcp(172.16.76.105:16310)/information_schema",
+		ConnInfo:       fmt.Sprintf("%s@tcp(%s:16310)/information_schema", sourceUserInfo, sourceIp),
 	}
-	MasterSqlScaleOperator = sqlScaleStruct
+	MasterSqlScaleOperator = masterSqlStruct
 
 	var slaveSqlStruct = &mapper.SqlScaleStruct{
-		MaxIdleConns:   2,
+		MaxIdleConns:   1,
 		DirverName:     "mysql",
 		DBconnIdleTime: time.Minute * 3,
-		ConnInfo:       "admin:!QAZ2wsx@tcp(172.16.128.13:16310)/information_schema",
+		ConnInfo:       fmt.Sprintf("%s@tcp(%s:16310)/information_schema", targetUserInfo, targetIp),
 	}
 	SlaveSqlScaleOperator = slaveSqlStruct
 }
@@ -34,8 +38,8 @@ func ConfigInit() {
 func DoCheck() {
 
 	/**
-	需要判断是否是主集群
-	需要判断是发是备集群
+	是否需要判断是否是主集群？
+	是否需要判断是发是备集群？
 	*/
 	var rs int = 2
 
