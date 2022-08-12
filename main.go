@@ -12,9 +12,9 @@ func main() {
 	var targetSocket string
 
 	flag.StringVar(&sourceUserInfo, "s", "", "")
-	flag.StringVar(&sourceSocket, "sip", "", "")
+	flag.StringVar(&sourceSocket, "si", "", "")
 	flag.StringVar(&targetUserInfo, "t", "", "")
-	flag.StringVar(&targetSocket, "tip", "", "")
+	flag.StringVar(&targetSocket, "ti", "", "")
 	flag.Parse()
 	//fmt.Println(sourceUserInfo, sourceSocket, targetUserInfo, targetSocket)
 	check.ConfigInit(sourceUserInfo, sourceSocket, targetUserInfo, targetSocket)
