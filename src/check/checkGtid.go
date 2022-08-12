@@ -43,34 +43,35 @@ func DoCheck() {
 	MasterSqlScaleOperator.InitDbConnection()
 	masterStatus := MasterSqlScaleOperator.DoQueryParseMaster(strSql)
 
-	strSql = fmt.Sprint("select uuid()")
+	strSql = fmt.Sprint("show variables like 'server_uuid'")
 	masterUuid := MasterSqlScaleOperator.DoQueryParseString(strSql)
 
 	strSql = fmt.Sprint("show slave status")
 	SlaveSqlScaleOperator.InitDbConnection()
 	slaveStatus := SlaveSqlScaleOperator.DoQueryParseSlave(strSql)
 
-	strSql = fmt.Sprint("select uuid()")
+	//strSql = fmt.Sprint("show variables like 'server_uuid'")
 	//slaveUuid := SlaveSqlScaleOperator.DoQueryParseString(strSql)
 
 	var masterGtid string
 	var slaveGtid string
 
 	if masterStatus.File != "" && slaveStatus.MasterLogFile != "" {
-		masterExectedGtids := strings.Split(masterStatus.ExecutedGtidSet, ",")
-		for i := 0; i < len(masterExectedGtids); i++ {
-			log.Println(masterExectedGtids[i])
-			if strings.Contains(masterExectedGtids[i], masterUuid) {
-				masterGtid = masterExectedGtids[i]
+		masterExecutedGtids := strings.Split(masterStatus.ExecutedGtidSet, ",")
+		for i := 0; i < len(masterExecutedGtids); i++ {
+			log.Println(masterExecutedGtids[i])
+
+			if strings.Contains(masterExecutedGtids[i], masterUuid) {
+				masterGtid = strings.Trim(masterExecutedGtids[i], "\n")
 				break
 			}
 		}
 
-		slaveExectedGtids := strings.Split(slaveStatus.ExecutedGtidSet, ",")
-		for i := 0; i < len(slaveExectedGtids); i++ {
-			log.Println(slaveExectedGtids[i])
-			if strings.Contains(slaveExectedGtids[i], masterUuid) {
-				slaveGtid = slaveExectedGtids[i]
+		slaveExecutedGtids := strings.Split(slaveStatus.ExecutedGtidSet, ",")
+		for i := 0; i < len(slaveExecutedGtids); i++ {
+			log.Println(slaveExecutedGtids[i])
+			if strings.Contains(slaveExecutedGtids[i], masterUuid) {
+				slaveGtid = strings.Trim(slaveExecutedGtids[i], "\n")
 				break
 			}
 		}
@@ -78,6 +79,15 @@ func DoCheck() {
 		if strings.Contains(slaveGtid, masterGtid) {
 			rs -= 1
 		}
+
+		if masterStatus.Position == slaveStatus.ReadMasterLogPos {
+			rs -= 1
+		}
+
+		log.Printf("主集群GTID：%s", masterGtid)
+		log.Printf("备集群GTID：%s", slaveGtid)
+		log.Print("主集群POS点位: ", masterStatus.Position)
+		log.Print("备集群POS点位: ", slaveStatus.ReadMasterLogPos)
 
 	}
 

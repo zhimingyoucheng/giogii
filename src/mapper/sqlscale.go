@@ -27,14 +27,12 @@ type SqlScaleStruct struct {
 }
 
 func (sqlScaleStruct *SqlScaleStruct) InitDbConnection() {
-	log.Println("Initializes the database connection object")
 	db, err := sql.Open(sqlScaleStruct.DirverName, sqlScaleStruct.ConnInfo)
 	if err != nil {
 		errStr := fmt.Sprintf("unknown driver %q (forgotten import?)", sqlScaleStruct.DirverName)
 		log.Println(errStr)
 		os.Exit(1)
 	}
-	log.Println("Send a ping packet to check the database running status")
 	if err := db.Ping(); err != nil {
 		errStr := "Failed to open a database connection and create a session connection. pleace Check the database status or network status"
 		log.Println(errStr)
@@ -47,14 +45,6 @@ func (sqlScaleStruct *SqlScaleStruct) InitDbConnection() {
 
 func (sqlScaleStruct *SqlScaleStruct) doQuery(sqlStr string) *sql.Rows {
 	dbConnection := sqlScaleStruct.dbConnSocketinfo
-	log.Println(fmt.Sprintf("Prepare initialize the SQL statement:%s", sqlStr))
-
-	/*	stmt, err := dbConnection.Prepare(sqlStr)
-		if err != nil {
-			log.Println(fmt.Sprintf("Prepare SQL file ,This is a bad connection. SQL info: %s", sqlStr))
-		}
-		log.Println(fmt.Sprintf("Execute SQL statement queries: %s", sqlStr))
-	*/
 	rows, err := dbConnection.Query(sqlStr)
 	if err != nil {
 		log.Println(fmt.Sprintf("Execute SQL file ,This is a bad connection. SQL info: %s", sqlStr))
@@ -98,12 +88,13 @@ func (sqlScaleStruct *SqlScaleStruct) DoQueryParseSlave(sqlStr string) entity.Sl
 func (sqlScaleStruct *SqlScaleStruct) DoQueryParseString(sqlStr string) string {
 	rows := sqlScaleStruct.doQuery(sqlStr)
 	var rst string
+	var value string
 	for rows.Next() {
-		err := rows.Scan(rst)
+		err := rows.Scan(&rst, &value)
 		if err != nil {
 			log.Println(err)
 		}
 	}
 
-	return rst
+	return value
 }
