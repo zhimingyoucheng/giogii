@@ -33,7 +33,7 @@ func DoCheck() {
 
 	strSql = fmt.Sprint("show master status")
 	MasterSqlScaleOperator.InitDbConnection()
-	masterStatus := MasterSqlScaleOperator.DoQueryParseString(strSql)
+	masterStatus := MasterSqlScaleOperator.DoQueryParseMaster(strSql)
 	if masterStatus.File != "" {
 
 	}
