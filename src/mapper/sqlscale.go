@@ -16,14 +16,19 @@ type SqlScaleOperator interface {
 	DoQueryParseMaster(sqlStr string) entity.MasterStatus
 	DoQueryParseSlave(sqlStr string) entity.SlaveStatus
 	DoQueryParseString(sqlStr string) string
+	DoClose()
 }
 
 type SqlScaleStruct struct {
-	DirverName       string
-	ConnInfo         string
-	DBconnIdleTime   time.Duration
-	MaxIdleConns     int
-	dbConnSocketinfo *sql.DB
+	DirverName     string
+	ConnInfo       string
+	DBconnIdleTime time.Duration
+	MaxIdleConns   int
+	Connection     *sql.DB
+}
+
+func (sqlScaleStruct *SqlScaleStruct) DoClose() {
+	sqlScaleStruct.Connection.Close()
 }
 
 func (sqlScaleStruct *SqlScaleStruct) InitDbConnection() {
@@ -34,20 +39,20 @@ func (sqlScaleStruct *SqlScaleStruct) InitDbConnection() {
 		os.Exit(1)
 	}
 	if err := db.Ping(); err != nil {
-		errStr := "Failed to open a database connection and create a session connection. pleace Check the database status or network status"
+		errStr := "Failed to open a database connection and create a session connection"
 		log.Println(errStr)
 		os.Exit(1)
 	}
 	db.SetConnMaxIdleTime(sqlScaleStruct.DBconnIdleTime)
 	db.SetMaxIdleConns(sqlScaleStruct.MaxIdleConns)
-	sqlScaleStruct.dbConnSocketinfo = db
+	sqlScaleStruct.Connection = db
 }
 
 func (sqlScaleStruct *SqlScaleStruct) doQuery(sqlStr string) *sql.Rows {
-	dbConnection := sqlScaleStruct.dbConnSocketinfo
+	dbConnection := sqlScaleStruct.Connection
 	rows, err := dbConnection.Query(sqlStr)
 	if err != nil {
-		log.Println(fmt.Sprintf("Execute SQL file ,This is a bad connection. SQL info: %s", sqlStr))
+		log.Println(fmt.Sprintf("This is a bad connection. SQL info: %s", sqlStr))
 	}
 	return rows
 }
@@ -95,6 +100,5 @@ func (sqlScaleStruct *SqlScaleStruct) DoQueryParseString(sqlStr string) string {
 			log.Println(err)
 		}
 	}
-
 	return value
 }
