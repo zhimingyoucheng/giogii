@@ -3,6 +3,8 @@ package check
 import (
 	"fmt"
 	"giogii/src/mapper"
+	"log"
+	"strings"
 	"time"
 )
 
@@ -31,18 +33,52 @@ func ConfigInit() {
 
 func DoCheck() {
 
+	/**
+	需要判断是否是主集群
+	需要判断是发是备集群
+	*/
+	var rs int = 2
+
 	strSql = fmt.Sprint("show master status")
 	MasterSqlScaleOperator.InitDbConnection()
 	masterStatus := MasterSqlScaleOperator.DoQueryParseMaster(strSql)
-	if masterStatus.File != "" {
 
-	}
+	strSql = fmt.Sprint("select uuid()")
+	masterUuid := MasterSqlScaleOperator.DoQueryParseString(strSql)
 
 	strSql = fmt.Sprint("show slave status")
 	SlaveSqlScaleOperator.InitDbConnection()
 	slaveStatus := SlaveSqlScaleOperator.DoQueryParseSlave(strSql)
 
-	if slaveStatus.MasterLogFile != "" {
+	strSql = fmt.Sprint("select uuid()")
+	//slaveUuid := SlaveSqlScaleOperator.DoQueryParseString(strSql)
+
+	var masterGtid string
+	var slaveGtid string
+
+	if masterStatus.File != "" && slaveStatus.MasterLogFile != "" {
+		masterExectedGtids := strings.Split(masterStatus.ExecutedGtidSet, ",")
+		for i := 0; i < len(masterExectedGtids); i++ {
+			log.Println(masterExectedGtids[i])
+			if strings.Contains(masterExectedGtids[i], masterUuid) {
+				masterGtid = masterExectedGtids[i]
+				break
+			}
+		}
+
+		slaveExectedGtids := strings.Split(slaveStatus.ExecutedGtidSet, ",")
+		for i := 0; i < len(slaveExectedGtids); i++ {
+			log.Println(slaveExectedGtids[i])
+			if strings.Contains(slaveExectedGtids[i], masterUuid) {
+				slaveGtid = slaveExectedGtids[i]
+				break
+			}
+		}
+
+		if strings.Contains(slaveGtid, masterGtid) {
+			rs -= 1
+		}
 
 	}
+
 }

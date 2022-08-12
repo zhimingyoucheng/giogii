@@ -15,6 +15,7 @@ type SqlScaleOperator interface {
 	doQuery(sqlStr string) *sql.Rows
 	DoQueryParseMaster(sqlStr string) entity.MasterStatus
 	DoQueryParseSlave(sqlStr string) entity.SlaveStatus
+	DoQueryParseString(sqlStr string) string
 }
 
 type SqlScaleStruct struct {
@@ -74,68 +75,35 @@ func (sqlScaleStruct *SqlScaleStruct) DoQueryParseSlave(sqlStr string) entity.Sl
 	rows := sqlScaleStruct.doQuery(sqlStr)
 	var slaveStatus entity.SlaveStatus
 	for rows.Next() {
-		rows.Scan(
-			&slaveStatus.SlaveIOState,
-			&slaveStatus.MasterHost,
-			&slaveStatus.MasterUser,
-			&slaveStatus.MasterPort,
-			&slaveStatus.ConnectRetry,
-			&slaveStatus.MasterLogFile,
-			&slaveStatus.ReadMasterLogPos,
-			&slaveStatus.RelayLogFile,
-			&slaveStatus.RelayLogPos,
-			&slaveStatus.RelayMasterLogFile,
-			&slaveStatus.SlaveIORunning,
-			&slaveStatus.SlaveSQLRunning,
-			&slaveStatus.ReplicateDoDB,
-			&slaveStatus.ReplicateIgnoreDB,
-			&slaveStatus.ReplicateDoTable,
-			&slaveStatus.ReplicateIgnoreTable,
-			&slaveStatus.ReplicateWildDoTable,
-			&slaveStatus.ReplicateWildIgnoreTable,
-			&slaveStatus.LastErrno,
-			&slaveStatus.LastError,
-			&slaveStatus.SkipCounter,
-			&slaveStatus.ExecMasterLogPos,
-			&slaveStatus.RelayLogSpace,
-			&slaveStatus.UntilCondition,
-			&slaveStatus.UntilLogFile,
-			&slaveStatus.UntilLogPos,
-			&slaveStatus.MasterSSLAllowed,
-			&slaveStatus.MasterSSLCAFile,
-			&slaveStatus.MasterSSLCAPath,
-			&slaveStatus.MasterSSLCert,
-			&slaveStatus.MasterSSLCipher,
-			&slaveStatus.MasterSSLKey,
-			&slaveStatus.SecondsBehindMaster,
-			&slaveStatus.MasterSSLVerifyServerCert,
-			&slaveStatus.LastIOErrno,
-			&slaveStatus.LastIOError,
-			&slaveStatus.LastSQLErrno,
-			&slaveStatus.LastSQLError,
-			&slaveStatus.ReplicateIgnoreServerIds,
-			&slaveStatus.MasterServerId,
-			&slaveStatus.MasterUUID,
-			&slaveStatus.MasterInfoFile,
-			&slaveStatus.SQLDelay,
-			&slaveStatus.SQLRemainingDelay,
-			&slaveStatus.SlaveSQLRunningState,
-			&slaveStatus.MasterRetryCount,
-			&slaveStatus.MasterBind,
-			&slaveStatus.LastIOErrorTimestamp,
-			&slaveStatus.LastSQLErrorTimestamp,
-			&slaveStatus.MasterSSLCrl,
-			&slaveStatus.MasterSSLCrlpath,
-			&slaveStatus.RetrievedGtidSet,
-			&slaveStatus.ExecutedGtidSet,
-			&slaveStatus.AutoPosition,
-			&slaveStatus.ReplicateRewriteDB,
-			&slaveStatus.ChannelName,
-			&slaveStatus.MasterTLSVersion,
-			&slaveStatus.Masterpublickeypath,
-			&slaveStatus.Getmasterpublickey,
-			&slaveStatus.NetworkNamespace,
+		err := rows.Scan(&slaveStatus.SlaveIOState, &slaveStatus.MasterHost, &slaveStatus.MasterUser, &slaveStatus.MasterPort, &slaveStatus.ConnectRetry,
+			&slaveStatus.MasterLogFile, &slaveStatus.ReadMasterLogPos, &slaveStatus.RelayLogFile, &slaveStatus.RelayLogPos, &slaveStatus.RelayMasterLogFile,
+			&slaveStatus.SlaveIORunning, &slaveStatus.SlaveSQLRunning, &slaveStatus.ReplicateDoDB, &slaveStatus.ReplicateIgnoreDB, &slaveStatus.ReplicateDoTable,
+			&slaveStatus.ReplicateIgnoreTable, &slaveStatus.ReplicateWildDoTable, &slaveStatus.ReplicateWildIgnoreTable, &slaveStatus.LastErrno,
+			&slaveStatus.LastError, &slaveStatus.SkipCounter, &slaveStatus.ExecMasterLogPos, &slaveStatus.RelayLogSpace, &slaveStatus.UntilCondition,
+			&slaveStatus.UntilLogFile, &slaveStatus.UntilLogPos, &slaveStatus.MasterSSLAllowed, &slaveStatus.MasterSSLCAFile, &slaveStatus.MasterSSLCAPath,
+			&slaveStatus.MasterSSLCert, &slaveStatus.MasterSSLCipher, &slaveStatus.MasterSSLKey, &slaveStatus.SecondsBehindMaster, &slaveStatus.MasterSSLVerifyServerCert,
+			&slaveStatus.LastIOErrno, &slaveStatus.LastIOError, &slaveStatus.LastSQLErrno, &slaveStatus.LastSQLError, &slaveStatus.ReplicateIgnoreServerIds, &slaveStatus.MasterServerId,
+			&slaveStatus.MasterUUID, &slaveStatus.MasterInfoFile, &slaveStatus.SQLDelay, &slaveStatus.SQLRemainingDelay, &slaveStatus.SlaveSQLRunningState,
+			&slaveStatus.MasterRetryCount, &slaveStatus.MasterBind, &slaveStatus.LastIOErrorTimestamp, &slaveStatus.LastSQLErrorTimestamp, &slaveStatus.MasterSSLCrl,
+			&slaveStatus.MasterSSLCrlpath, &slaveStatus.RetrievedGtidSet, &slaveStatus.ExecutedGtidSet, &slaveStatus.AutoPosition, &slaveStatus.ReplicateRewriteDB,
+			&slaveStatus.ChannelName, &slaveStatus.MasterTLSVersion, &slaveStatus.Masterpublickeypath, &slaveStatus.Getmasterpublickey, &slaveStatus.NetworkNamespace,
 		)
+		if err != nil {
+			log.Println(err)
+		}
 	}
 	return slaveStatus
+}
+
+func (sqlScaleStruct *SqlScaleStruct) DoQueryParseString(sqlStr string) string {
+	rows := sqlScaleStruct.doQuery(sqlStr)
+	var rst string
+	for rows.Next() {
+		err := rows.Scan(rst)
+		if err != nil {
+			log.Println(err)
+		}
+	}
+
+	return rst
 }

@@ -4,12 +4,12 @@ type SlaveStatus struct {
 	SlaveIOState              string
 	MasterHost                string
 	MasterUser                string
-	MasterPort                string
-	ConnectRetry              string
+	MasterPort                int
+	ConnectRetry              int
 	MasterLogFile             string
-	ReadMasterLogPos          string
+	ReadMasterLogPos          int
 	RelayLogFile              string
-	RelayLogPos               string
+	RelayLogPos               int
 	RelayMasterLogFile        string
 	SlaveIORunning            string
 	SlaveSQLRunning           string
@@ -19,34 +19,34 @@ type SlaveStatus struct {
 	ReplicateIgnoreTable      string
 	ReplicateWildDoTable      string
 	ReplicateWildIgnoreTable  string
-	LastErrno                 string
+	LastErrno                 int
 	LastError                 string
-	SkipCounter               string
-	ExecMasterLogPos          string
-	RelayLogSpace             string
+	SkipCounter               int
+	ExecMasterLogPos          int
+	RelayLogSpace             int
 	UntilCondition            string
 	UntilLogFile              string
-	UntilLogPos               string
+	UntilLogPos               int
 	MasterSSLAllowed          string
 	MasterSSLCAFile           string
 	MasterSSLCAPath           string
 	MasterSSLCert             string
 	MasterSSLCipher           string
 	MasterSSLKey              string
-	SecondsBehindMaster       string
+	SecondsBehindMaster       int
 	MasterSSLVerifyServerCert string
-	LastIOErrno               string
+	LastIOErrno               int
 	LastIOError               string
-	LastSQLErrno              string
+	LastSQLErrno              int
 	LastSQLError              string
 	ReplicateIgnoreServerIds  string
-	MasterServerId            string
+	MasterServerId            int
 	MasterUUID                string
 	MasterInfoFile            string
-	SQLDelay                  string
-	SQLRemainingDelay         string
+	SQLDelay                  int
+	SQLRemainingDelay         *int
 	SlaveSQLRunningState      string
-	MasterRetryCount          string
+	MasterRetryCount          int
 	MasterBind                string
 	LastIOErrorTimestamp      string
 	LastSQLErrorTimestamp     string
@@ -54,11 +54,11 @@ type SlaveStatus struct {
 	MasterSSLCrlpath          string
 	RetrievedGtidSet          string
 	ExecutedGtidSet           string
-	AutoPosition              string
+	AutoPosition              int
 	ReplicateRewriteDB        string
 	ChannelName               string
 	MasterTLSVersion          string
 	Masterpublickeypath       string
-	Getmasterpublickey        string
+	Getmasterpublickey        int
 	NetworkNamespace          string
 }

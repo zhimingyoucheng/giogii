@@ -1,27 +1,27 @@
 ## 
-mysql> show slave status\G
-*************************** 1. row ***************************
 Slave_IO_State: Waiting for source to send event
 Master_Host: 172.16.76.106
+Master_User: dbscale_internal
+Master_Port: 16315
 Connect_Retry: 60
-Master_Log_File: db-bin.000002
-Read_Master_Log_Pos: 24791
+Master_Log_File: greatdb-bin.000002
+Read_Master_Log_Pos: 94405068
 Relay_Log_File: mysql-relay.000006
-Relay_Log_Pos: 908
-Relay_Master_Log_File: db-bin.000002
+Relay_Log_Pos: 94381185
+Relay_Master_Log_File: greatdb-bin.000002
 Slave_IO_Running: Yes
 Slave_SQL_Running: Yes
-Replicate_Do_DB:
-Replicate_Ignore_DB:
-Replicate_Do_Table:
-Replicate_Ignore_Table:
-Replicate_Wild_Do_Table:
+Replicate_Do_DB: 
+Replicate_Ignore_DB: 
+Replicate_Do_Table: 
+Replicate_Ignore_Table: 
+Replicate_Wild_Do_Table: 
 Replicate_Wild_Ignore_Table:
 Last_Errno: 0
 Last_Error:
 Skip_Counter: 0
-Exec_Master_Log_Pos: 24791
-Relay_Log_Space: 1552
+Exec_Master_Log_Pos: 94405068
+Relay_Log_Space: 94381829
 Until_Condition: None
 Until_Log_File:
 Until_Log_Pos: 0
@@ -50,8 +50,8 @@ Last_IO_Error_Timestamp:
 Last_SQL_Error_Timestamp:
 Master_SSL_Crl:
 Master_SSL_Crlpath:
-Retrieved_Gtid_Set: ca44b126-1843-11ed-ae88-5254008903de:1-32:34-37
-Executed_Gtid_Set: ca44b126-1843-11ed-ae88-5254008903de:1-37,
+Retrieved_Gtid_Set: ca44b126-1843-11ed-ae88-5254008903de:1-32:34-133
+Executed_Gtid_Set: ca44b126-1843-11ed-ae88-5254008903de:1-133,
 e37b67a2-183a-11ed-8e9f-52540012644d:1-3,
 e3aa3eeb-183a-11ed-b503-5254008da967:1-43
 Auto_Position: 1
