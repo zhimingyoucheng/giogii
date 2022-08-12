@@ -8,7 +8,8 @@ import (
 
 var strSql string
 var ShowMasterStatus = make(map[string]string)
-var SqlScaleOperator mapper.SqlScaleOperator
+var MasterSqlScaleOperator mapper.SqlScaleOperator
+var SlaveSqlScaleOperator mapper.SqlScaleOperator
 
 func ConfigInit() {
 	var sqlScaleStruct = &mapper.SqlScaleStruct{
@@ -17,19 +18,31 @@ func ConfigInit() {
 		DBconnIdleTime: time.Minute * 3,
 		ConnInfo:       "admin:!QAZ2wsx@tcp(172.16.76.105:16310)/information_schema",
 	}
-	SqlScaleOperator = sqlScaleStruct
+	MasterSqlScaleOperator = sqlScaleStruct
+
+	var slaveSqlStruct = &mapper.SqlScaleStruct{
+		MaxIdleConns:   2,
+		DirverName:     "mysql",
+		DBconnIdleTime: time.Minute * 3,
+		ConnInfo:       "admin:!QAZ2wsx@tcp(172.16.128.13:16310)/information_schema",
+	}
+	SlaveSqlScaleOperator = slaveSqlStruct
 }
 
 func DoCheck() {
 
 	strSql = fmt.Sprint("show master status")
-	SqlScaleOperator.InitDbConnection()
-	masterStatus := SqlScaleOperator.DoQueryParseString(strSql)
+	MasterSqlScaleOperator.InitDbConnection()
+	masterStatus := MasterSqlScaleOperator.DoQueryParseString(strSql)
 	if masterStatus.File != "" {
 
 	}
 
 	strSql = fmt.Sprint("show slave status")
-	SqlScaleOperator.InitDbConnection()
+	SlaveSqlScaleOperator.InitDbConnection()
+	slaveStatus := SlaveSqlScaleOperator.DoQueryParseSlave(strSql)
 
+	if slaveStatus.MasterLogFile != "" {
+
+	}
 }
