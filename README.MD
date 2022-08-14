@@ -1,5 +1,4 @@
-### A tool for comparing data between host groups and Dr Clusters. It is used to perform switchover between the primary
-### cluster and Dr Cluster and compare the incremental differences between clusters
+### A tool for comparing data between host groups and Dr Clusters. It is used to perform switchover between the primary cluster and Dr Cluster and compare the incremental differences between clusters
 
 ```shell
 master_info_repository = TABLE
