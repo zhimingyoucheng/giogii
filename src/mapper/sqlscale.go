@@ -34,13 +34,11 @@ func (sqlScaleStruct *SqlScaleStruct) DoClose() {
 func (sqlScaleStruct *SqlScaleStruct) InitDbConnection() {
 	db, err := sql.Open(sqlScaleStruct.DirverName, sqlScaleStruct.ConnInfo)
 	if err != nil {
-		errStr := fmt.Sprintf("unknown driver %q (forgotten import?)", sqlScaleStruct.DirverName)
-		log.Println(errStr)
+		log.Printf("unknown driver %s (forgotten import?)", sqlScaleStruct.DirverName)
 		os.Exit(1)
 	}
 	if err := db.Ping(); err != nil {
-		errStr := "Failed to open a database connection and create a session connection"
-		log.Println(errStr)
+		log.Printf("Failed to open a database connection and create a session connection %s", sqlScaleStruct.ConnInfo)
 		os.Exit(1)
 	}
 	db.SetConnMaxIdleTime(sqlScaleStruct.DBconnIdleTime)
