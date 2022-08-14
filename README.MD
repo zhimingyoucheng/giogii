@@ -3,7 +3,7 @@
 
 ```shell
 master_info_repository = TABLE
-sync_master_info = 10000  io thread 的位置持久化，也就没法保证正确，
+sync_master_info = 10000  io thread 的位置持久化也就没法保证正确
 relay_log_recovery = ON 
 
 
