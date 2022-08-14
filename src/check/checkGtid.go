@@ -76,10 +76,10 @@ func DoCheck() {
 		if masterStatus.Position == slaveStatus.ReadMasterLogPos {
 			rs -= 1
 		}
-		log.Printf("主集群GTID：%s", masterGtid)
-		log.Printf("备集群GTID：%s", slaveGtid)
-		log.Print("主集群POS点位: ", masterStatus.Position)
-		log.Print("备集群POS点位: ", slaveStatus.ReadMasterLogPos)
+		log.Printf("Source Cluster GTID：%s", masterGtid)
+		log.Printf("Target Cluster GTID：%s", slaveGtid)
+		log.Print("Source Cluster POS: ", masterStatus.Position)
+		log.Print("Target Cluster POS: ", slaveStatus.ReadMasterLogPos)
 
 		fmt.Println(rs)
 
