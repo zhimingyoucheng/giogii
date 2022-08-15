@@ -29,6 +29,9 @@ func ConfigInit(sourceUserInfo string, sourceSocket string, targetUserInfo strin
 		ConnInfo:       fmt.Sprintf("%s@tcp(%s)/information_schema", targetUserInfo, targetSocket),
 	}
 	SlaveSqlScaleOperator = slaveSqlStruct
+
+	MasterSqlScaleOperator.InitDbConnection()
+	SlaveSqlScaleOperator.InitDbConnection()
 }
 
 func DoCheck() {
@@ -38,9 +41,6 @@ func DoCheck() {
 	是否需要判断是发是备集群？
 	*/
 	var rs = 2
-
-	MasterSqlScaleOperator.InitDbConnection()
-	SlaveSqlScaleOperator.InitDbConnection()
 
 	strSql = fmt.Sprint("show master status")
 	masterStatus := MasterSqlScaleOperator.DoQueryParseMaster(strSql)
