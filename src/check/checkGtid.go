@@ -72,7 +72,7 @@ func DoCheck() {
 		}
 		if strings.Contains(slaveGtid, masterGtid) {
 			rs -= 1
-		} else if strings.Contains(slaveGtid, "-") {
+		} else if strings.Contains(slaveGtid, "-") && strings.Contains(masterGtid, "-") {
 			slaveLastIndex := strings.LastIndex(slaveGtid, "-")
 			masterLastIndex := strings.LastIndex(masterGtid, "-")
 			if masterGtid[masterLastIndex+1:] == slaveGtid[slaveLastIndex+1:] {
