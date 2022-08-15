@@ -80,6 +80,7 @@ func DoCheck() {
 					rs -= 1
 				}
 			}
+
 		}
 
 		if masterStatus.Position == slaveStatus.ReadMasterLogPos {
