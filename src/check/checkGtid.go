@@ -80,14 +80,14 @@ func DoCheck() {
 			}
 		}
 
-		if masterStatus.Position == slaveStatus.ReadMasterLogPos {
+		if &masterStatus.Position == &slaveStatus.ReadMasterLogPos {
 			rs -= 1
 		}
 
 		log.Printf("Source Cluster GTID：%s", masterGtid)
 		log.Printf("Target Cluster GTID：%s", slaveGtid)
-		log.Print("Source Cluster POS: ", masterStatus.Position)
-		log.Print("Target Cluster POS: ", slaveStatus.ReadMasterLogPos)
+		log.Print("Source Cluster POS: ", *masterStatus.Position)
+		log.Print("Target Cluster POS: ", *slaveStatus.ReadMasterLogPos)
 
 		fmt.Println(rs)
 
