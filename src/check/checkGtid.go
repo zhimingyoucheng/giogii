@@ -94,10 +94,13 @@ func DoCheck() {
 
 		fmt.Println(rs)
 
-		if rs == 0 {
-			MasterSqlScaleOperator.DoClose()
-			SlaveSqlScaleOperator.DoClose()
-		}
+	} else {
+		log.Printf("show master status / show slave status return null")
 	}
+
+	defer func() {
+		MasterSqlScaleOperator.DoClose()
+		SlaveSqlScaleOperator.DoClose()
+	}()
 
 }
