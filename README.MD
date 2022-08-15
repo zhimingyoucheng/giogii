@@ -14,7 +14,7 @@ slave_relay_log_info 表存储 slave sql thread 的工作位置
 ```
 
 
-### 调用方式
+### quick start
 ```shell
 ./giogii -s 'admin:!QAZ2wsx' -si '172.16.76.105:16310' -t 'admin:!QAZ2wsx' -ti '172.16.128.13:16310'
 # s 源端集群信息 si 源端连接信息  t 目标端集群信息  ti 目标端连接信息
@@ -22,7 +22,7 @@ slave_relay_log_info 表存储 slave sql thread 的工作位置
 # 返回值 两个集群之间如果无GTID和POS差异则返回0，任何大于0的值都需要发起二次调用
 ```
 
-### MAC编译
+### mac build 
 ```shell
 cd giogii/
 CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build
