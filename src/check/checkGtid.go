@@ -18,7 +18,7 @@ func ConfigInit(sourceUserInfo string, sourceSocket string, targetUserInfo strin
 	var masterSqlStruct = &mapper.SqlScaleStruct{
 		MaxIdleConns:   1,
 		DirverName:     "mysql",
-		DBconnIdleTime: time.Minute * 3,
+		DBconnIdleTime: time.Minute * 1,
 		ConnInfo:       fmt.Sprintf("%s@tcp(%s)/information_schema", sourceUserInfo, sourceSocket),
 	}
 	MasterSqlScaleOperator = masterSqlStruct
@@ -26,7 +26,7 @@ func ConfigInit(sourceUserInfo string, sourceSocket string, targetUserInfo strin
 	var slaveSqlStruct = &mapper.SqlScaleStruct{
 		MaxIdleConns:   1,
 		DirverName:     "mysql",
-		DBconnIdleTime: time.Minute * 3,
+		DBconnIdleTime: time.Minute * 1,
 		ConnInfo:       fmt.Sprintf("%s@tcp(%s)/information_schema", targetUserInfo, targetSocket),
 	}
 	SlaveSqlScaleOperator = slaveSqlStruct
