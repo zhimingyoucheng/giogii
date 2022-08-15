@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"giogii/src/mapper"
 	"log"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -80,7 +81,7 @@ func DoCheck() {
 			}
 		}
 
-		if &masterStatus.Position == &slaveStatus.ReadMasterLogPos {
+		if strconv.Itoa(*masterStatus.Position) == strconv.Itoa(*slaveStatus.ReadMasterLogPos) {
 			rs -= 1
 		}
 
