@@ -72,15 +72,12 @@ func DoCheck() {
 		}
 		if strings.Contains(slaveGtid, masterGtid) {
 			rs -= 1
-		} else {
-			if strings.Contains(slaveGtid, "-") {
-				slaveLastIndex := strings.LastIndex(slaveGtid, "-")
-				masterLastIndex := strings.LastIndex(masterGtid, "-")
-				if masterGtid[masterLastIndex+1:] == slaveGtid[slaveLastIndex+1:] {
-					rs -= 1
-				}
+		} else if strings.Contains(slaveGtid, "-") {
+			slaveLastIndex := strings.LastIndex(slaveGtid, "-")
+			masterLastIndex := strings.LastIndex(masterGtid, "-")
+			if masterGtid[masterLastIndex+1:] == slaveGtid[slaveLastIndex+1:] {
+				rs -= 1
 			}
-
 		}
 
 		if masterStatus.Position == slaveStatus.ReadMasterLogPos {
