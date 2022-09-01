@@ -13,9 +13,9 @@ var MasterSqlScaleOperator mapper.SqlScaleOperator
 var SlaveSqlScaleOperator mapper.SqlScaleOperator
 
 func ConfigInit(sourceUserInfo string, sourceSocket string, targetUserInfo string, targetSocket string) {
-	s, t := InitConfig(sourceUserInfo, sourceSocket, targetUserInfo, targetSocket)
-	MasterSqlScaleOperator = s
-	SlaveSqlScaleOperator = t
+	s, t := mapper.InitConfig(sourceUserInfo, sourceSocket, targetUserInfo, targetSocket)
+	MasterSqlScaleOperator = &s
+	SlaveSqlScaleOperator = &t
 }
 
 func DoCheck() {
