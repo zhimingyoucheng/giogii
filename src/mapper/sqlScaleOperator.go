@@ -10,6 +10,8 @@ type SqlScaleOperator interface {
 	DoQueryParseMaster(sqlStr string) entity.MasterStatus
 	DoQueryParseSlave(sqlStr string) entity.SlaveStatus
 	DoQueryParseString(sqlStr string) string
+	DoQueryParseParameter(sqlStr string, args string) (c []entity.Configuration)
+	DoQueryParseValue(sqlStr string) string
 	DoClose()
 }
 
@@ -52,6 +54,29 @@ func (sqlScaleStruct *SqlStruct) DoQueryParseString(sqlStr string) string {
 	var value string
 	for rows.Next() {
 		err := rows.Scan(&rst, &value)
+		if err != nil {
+			log.Println(err)
+		}
+	}
+	return value
+}
+
+func (sqlScaleStruct *SqlStruct) DoQueryParseParameter(sqlStr string, args string) (c []entity.Configuration) {
+	rows := sqlScaleStruct.doPrepareQuery(sqlStr, args)
+	for rows.Next() {
+		var configuration entity.Configuration
+		rows.Scan(&configuration.Name, &configuration.Value, &configuration.Type)
+		c = append(c, configuration)
+	}
+	return
+}
+
+func (sqlScaleStruct *SqlStruct) DoQueryParseValue(sqlStr string) string {
+	rows := sqlScaleStruct.doQuery(sqlStr)
+	var optionName string
+	var value string
+	for rows.Next() {
+		err := rows.Scan(&optionName, &value)
 		if err != nil {
 			log.Println(err)
 		}
