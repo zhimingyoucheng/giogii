@@ -99,7 +99,3 @@ func DoCheck() {
 	}()
 
 }
-
-func DoCheckParameter() {
-
-}
