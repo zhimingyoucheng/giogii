@@ -11,6 +11,7 @@ type SqlScaleOperator interface {
 	DoQueryParseSlave(sqlStr string) entity.SlaveStatus
 	DoQueryParseString(sqlStr string) string
 	DoQueryParseParameter(sqlStr string, args string) (c []entity.Configuration)
+	DoQueryParseConsumers(sqlStr string, args string) entity.Consumers
 	DoQueryParseValue(sqlStr string) string
 	DoClose()
 }
@@ -69,6 +70,15 @@ func (sqlScaleStruct *SqlStruct) DoQueryParseParameter(sqlStr string, args strin
 		c = append(c, configuration)
 	}
 	return
+}
+
+func (sqlScaleStruct *SqlStruct) DoQueryParseConsumers(sqlStr string, args string) entity.Consumers {
+	rows := sqlScaleStruct.doPrepareQuery(sqlStr, args)
+	var consumer entity.Consumers
+	for rows.Next() {
+		rows.Scan(&consumer.Name, &consumer.Enabled)
+	}
+	return consumer
 }
 
 func (sqlScaleStruct *SqlStruct) DoQueryParseValue(sqlStr string) string {

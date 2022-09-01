@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"giogii/src/mapper"
 	"log"
+	"strings"
 )
 
 var BaseParameter mapper.SqlScaleOperator
@@ -27,15 +28,54 @@ func DoCheckParameter() {
 	for i := 0; i < len(configuration); i++ {
 		if configuration[i].Type == "dbscale" {
 			strSql = fmt.Sprintf("dbscale show options like '%s'", configuration[i].Name)
-			value := ClusterParameter.DoQueryParseValue(strSql)
-			if value == "TRUE" {
+			value := strings.ToLower(ClusterParameter.DoQueryParseValue(strSql))
+			if value == "true" {
 				value = "1"
-			} else if value == "FALSE" {
+			} else if value == "false" {
 				value = "0"
 			}
-			if value != configuration[i].Value {
-				log.Println(fmt.Sprintf("实例[%s]参数：%s 基准值为：%s,实际值为：%s", TargetSocket, configuration[i].Name, configuration[i].Value, value))
+			if value != strings.ToLower(configuration[i].Value) {
+				log.Println(fmt.Sprintf("[实例 %s]参数：%s 基准值为：%s,实际值为：%s", TargetSocket, configuration[i].Name, configuration[i].Value, value))
 			}
+		} else if configuration[i].Type == "mysql" {
+
+			if configuration[i].Name == "performance-schema-instrument" {
+				continue
+			}
+
+			if strings.Contains(configuration[i].Name, "performance-schema-consumer") {
+				strSql = fmt.Sprintf("select * from performance_schema.setup_consumers where name = ?")
+				index := strings.Index(configuration[i].Name, "consumer")
+				args := strings.ReplaceAll(configuration[i].Name[index+9:], "-", "_")
+				consumer := ClusterParameter.DoQueryParseConsumers(strSql, args)
+				if consumer.Enabled == "YES" {
+					consumer.Enabled = "on"
+				} else if consumer.Enabled == "NO" {
+					consumer.Enabled = "off"
+				}
+
+				if consumer.Enabled != configuration[i].Value {
+					log.Println(fmt.Sprintf("[实例 %s]参数：%s 基准值为：%s,实际值为：%s", TargetSocket, configuration[i].Name, configuration[i].Value, consumer.Enabled))
+				}
+			} else {
+				strSql = fmt.Sprintf("show variables like '%s'", configuration[i].Name)
+				value := strings.ToLower(ClusterParameter.DoQueryParseValue(strSql))
+				baseValue := strings.ToLower(configuration[i].Value)
+				if value == "on" {
+					value = "1"
+				} else if value == "off" {
+					value = "0"
+				}
+				if baseValue == "on" {
+					baseValue = "1"
+				} else if baseValue == "off" {
+					baseValue = "0"
+				}
+				if value != baseValue {
+					log.Println(fmt.Sprintf("[实例 %s]参数：%s 基准值为：%s,实际值为：%s", TargetSocket, configuration[i].Name, configuration[i].Value, value))
+				}
+			}
+
 		}
 	}
 }
