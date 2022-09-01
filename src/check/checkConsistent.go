@@ -12,8 +12,8 @@ var strSql string
 var MasterSqlScaleOperator mapper.SqlScaleOperator
 var SlaveSqlScaleOperator mapper.SqlScaleOperator
 
-func ConfigInit(sourceUserInfo string, sourceSocket string, targetUserInfo string, targetSocket string) {
-	s, t := mapper.InitConfig(sourceUserInfo, sourceSocket, targetUserInfo, targetSocket)
+func InitCheckConsistentConf(sourceUserInfo string, sourceSocket string, sourceDatabase string, targetUserInfo string, targetSocket string, targetDatabase string) {
+	s, t := mapper.InitConfig(sourceUserInfo, sourceSocket, sourceDatabase, targetUserInfo, targetSocket, targetDatabase)
 	MasterSqlScaleOperator = &s
 	SlaveSqlScaleOperator = &t
 }

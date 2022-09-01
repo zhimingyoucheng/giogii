@@ -39,3 +39,13 @@ func (sqlScaleStruct *SqlStruct) doQuery(sqlStr string) *sql.Rows {
 	}
 	return rows
 }
+
+func (sqlScaleStruct *SqlStruct) doPrepareQuery(sqlStr string, args string) *sql.Rows {
+	connection := sqlScaleStruct.Connection
+	stmt, _ := connection.Prepare(sqlStr)
+	rows, err := stmt.Query(args)
+	if err != nil {
+		log.Println(fmt.Sprintf("This is a bad connection. SQL info: %s", sqlStr))
+	}
+	return rows
+}
