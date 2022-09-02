@@ -22,10 +22,18 @@ open_files_limit = ulimit -n  8.0.19以后
 
 ### quick start
 ```shell
-./giogii -s 'admin:!QAZ2wsx' -si '172.16.76.105:16310' -t 'admin:!QAZ2wsx' -ti '172.16.128.13:16310'
+# 主从集群数据比对工具使用方法
 # s 源端集群信息 si 源端连接信息  t 目标端集群信息  ti 目标端连接信息
-
+./giogii -s 'admin:!QAZ2wsx' -si '172.16.76.105:16310' -t 'admin:!QAZ2wsx' -ti '172.16.128.13:16310'
 # 返回值 两个集群之间如果无GTID和POS差异则返回0，任何大于0的值都需要发起二次调用
+```
+
+```shell
+# 参数基线比对工具使用方法
+# s 管控平台MySQL信息，固定值，不需要改 si 管控平台连接信息  t 目标端集群信息  ti 目标端连接信息
+./giogii -s 'root:drACgwoqtM' -si '172.17.128.49:13336' -t 'admin:!QAZ2wsx' -ti '172.17.128.13:16310' -c base
+
+# 检查结果会打印到控制台
 ```
 
 ### mac build x86 and arm
