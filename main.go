@@ -20,9 +20,9 @@ func main() {
 	flag.StringVar(&parameter, "c", "", "")
 	flag.Parse()
 
-	if strings.Trim(parameter, " ") == "base" {
+	if strings.Trim(parameter, " ") != "" {
 		check.InitCheckParameterConf(sourceUserInfo, sourceSocket, "greatrds", targetUserInfo, targetSocket, "information_schema")
-		check.DoCheckParameter()
+		check.DoCheckParameter(parameter)
 	} else {
 		check.InitCheckConsistentConf(sourceUserInfo, sourceSocket, "information_schema", targetUserInfo, targetSocket, "information_schema")
 		check.DoCheck()

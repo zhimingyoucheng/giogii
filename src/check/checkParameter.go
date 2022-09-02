@@ -18,12 +18,12 @@ func InitCheckParameterConf(sourceUserInfo string, sourceSocket string, sourceDa
 	TargetSocket = targetSocket
 }
 
-func DoCheckParameter() {
+func DoCheckParameter(template string) {
 	// select name,value,type from configuration_items where configuration_id = "d992bc11-fe27-4e03-a355-4ed325c7ca23";
 	// init base template
 	// select i.name,i.value,i.type from configuration_items as i inner join configuration as c on c.uuid = i.configuration_id where c.name = "base";
 	var strSql = "select i.name,i.value,i.type from configuration_items as i inner join configuration as c on c.uuid = i.configuration_id where c.name = ?"
-	configuration := BaseParameter.DoQueryParseParameter(strSql, "base")
+	configuration := BaseParameter.DoQueryParseParameter(strSql, template)
 	for i := 0; i < len(configuration); i++ {
 		switch tp := configuration[i].Type; tp {
 		case "dbscale":

@@ -30,7 +30,7 @@ open_files_limit = ulimit -n  8.0.19以后
 
 ```shell
 # 参数基线比对工具使用方法
-# s 管控平台MySQL信息，固定值，不需要改 si 管控平台连接信息  t 目标端集群信息  ti 目标端连接信息
+# -s 管控平台MySQL信息，固定值，不需要改. -si 管控平台连接信息  -t 目标端集群信息  -ti 目标端连接信息 -c 管控平台基准参数模板
 ./giogii -s 'root:drACgwoqtM' -si '172.17.128.49:13336' -t 'admin:!QAZ2wsx' -ti '172.17.128.13:16310' -c base
 
 # 检查结果会打印到控制台
