@@ -6,33 +6,16 @@ import (
 	"log"
 	"strconv"
 	"strings"
-	"time"
 )
 
 var strSql string
 var MasterSqlScaleOperator mapper.SqlScaleOperator
 var SlaveSqlScaleOperator mapper.SqlScaleOperator
 
-func ConfigInit(sourceUserInfo string, sourceSocket string, targetUserInfo string, targetSocket string) {
-
-	var masterSqlStruct = &mapper.SqlScaleStruct{
-		MaxIdleConns:   1,
-		DirverName:     "mysql",
-		DBconnIdleTime: time.Minute * 1,
-		ConnInfo:       fmt.Sprintf("%s@tcp(%s)/information_schema", sourceUserInfo, sourceSocket),
-	}
-	MasterSqlScaleOperator = masterSqlStruct
-
-	var slaveSqlStruct = &mapper.SqlScaleStruct{
-		MaxIdleConns:   1,
-		DirverName:     "mysql",
-		DBconnIdleTime: time.Minute * 1,
-		ConnInfo:       fmt.Sprintf("%s@tcp(%s)/information_schema", targetUserInfo, targetSocket),
-	}
-	SlaveSqlScaleOperator = slaveSqlStruct
-
-	MasterSqlScaleOperator.InitDbConnection()
-	SlaveSqlScaleOperator.InitDbConnection()
+func InitCheckConsistentConf(sourceUserInfo string, sourceSocket string, sourceDatabase string, targetUserInfo string, targetSocket string, targetDatabase string) {
+	s, t := mapper.InitConfig(sourceUserInfo, sourceSocket, sourceDatabase, targetUserInfo, targetSocket, targetDatabase)
+	MasterSqlScaleOperator = &s
+	SlaveSqlScaleOperator = &t
 }
 
 func DoCheck() {

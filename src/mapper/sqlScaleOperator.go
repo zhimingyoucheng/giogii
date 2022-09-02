@@ -1,61 +1,22 @@
 package mapper
 
 import (
-	"database/sql"
-	"fmt"
 	"giogii/src/entity"
 	_ "github.com/go-sql-driver/mysql"
 	"log"
-	"os"
-	"time"
 )
 
 type SqlScaleOperator interface {
-	InitDbConnection()
-	doQuery(sqlStr string) *sql.Rows
 	DoQueryParseMaster(sqlStr string) entity.MasterStatus
 	DoQueryParseSlave(sqlStr string) entity.SlaveStatus
 	DoQueryParseString(sqlStr string) string
+	DoQueryParseParameter(sqlStr string, args string) (c []entity.Configuration)
+	DoQueryParseConsumers(sqlStr string, args string) entity.Consumers
+	DoQueryParseValue(sqlStr string) string
 	DoClose()
 }
 
-type SqlScaleStruct struct {
-	DirverName     string
-	ConnInfo       string
-	DBconnIdleTime time.Duration
-	MaxIdleConns   int
-	Connection     *sql.DB
-}
-
-func (sqlScaleStruct *SqlScaleStruct) DoClose() {
-	sqlScaleStruct.Connection.Close()
-}
-
-func (sqlScaleStruct *SqlScaleStruct) InitDbConnection() {
-	db, err := sql.Open(sqlScaleStruct.DirverName, sqlScaleStruct.ConnInfo)
-	if err != nil {
-		log.Printf("unknown driver %s (forgotten import?)", sqlScaleStruct.DirverName)
-		os.Exit(1)
-	}
-	if err := db.Ping(); err != nil {
-		log.Printf("Failed to open a database connection and create a session connection %s", sqlScaleStruct.ConnInfo)
-		os.Exit(1)
-	}
-	db.SetConnMaxIdleTime(sqlScaleStruct.DBconnIdleTime)
-	db.SetMaxIdleConns(sqlScaleStruct.MaxIdleConns)
-	sqlScaleStruct.Connection = db
-}
-
-func (sqlScaleStruct *SqlScaleStruct) doQuery(sqlStr string) *sql.Rows {
-	dbConnection := sqlScaleStruct.Connection
-	rows, err := dbConnection.Query(sqlStr)
-	if err != nil {
-		log.Println(fmt.Sprintf("This is a bad connection. SQL info: %s", sqlStr))
-	}
-	return rows
-}
-
-func (sqlScaleStruct *SqlScaleStruct) DoQueryParseMaster(sqlStr string) entity.MasterStatus {
+func (sqlScaleStruct *SqlStruct) DoQueryParseMaster(sqlStr string) entity.MasterStatus {
 	rows := sqlScaleStruct.doQuery(sqlStr)
 	var masterStatus entity.MasterStatus
 	for rows.Next() {
@@ -64,7 +25,7 @@ func (sqlScaleStruct *SqlScaleStruct) DoQueryParseMaster(sqlStr string) entity.M
 	return masterStatus
 }
 
-func (sqlScaleStruct *SqlScaleStruct) DoQueryParseSlave(sqlStr string) entity.SlaveStatus {
+func (sqlScaleStruct *SqlStruct) DoQueryParseSlave(sqlStr string) entity.SlaveStatus {
 	rows := sqlScaleStruct.doQuery(sqlStr)
 	var slaveStatus entity.SlaveStatus
 	for rows.Next() {
@@ -88,7 +49,7 @@ func (sqlScaleStruct *SqlScaleStruct) DoQueryParseSlave(sqlStr string) entity.Sl
 	return slaveStatus
 }
 
-func (sqlScaleStruct *SqlScaleStruct) DoQueryParseString(sqlStr string) string {
+func (sqlScaleStruct *SqlStruct) DoQueryParseString(sqlStr string) string {
 	rows := sqlScaleStruct.doQuery(sqlStr)
 	var rst string
 	var value string
@@ -99,4 +60,40 @@ func (sqlScaleStruct *SqlScaleStruct) DoQueryParseString(sqlStr string) string {
 		}
 	}
 	return value
+}
+
+func (sqlScaleStruct *SqlStruct) DoQueryParseParameter(sqlStr string, args string) (c []entity.Configuration) {
+	rows := sqlScaleStruct.doPrepareQuery(sqlStr, args)
+	for rows.Next() {
+		var configuration entity.Configuration
+		rows.Scan(&configuration.Name, &configuration.Value, &configuration.Type)
+		c = append(c, configuration)
+	}
+	return
+}
+
+func (sqlScaleStruct *SqlStruct) DoQueryParseConsumers(sqlStr string, args string) entity.Consumers {
+	rows := sqlScaleStruct.doPrepareQuery(sqlStr, args)
+	var consumer entity.Consumers
+	for rows.Next() {
+		rows.Scan(&consumer.Name, &consumer.Enabled)
+	}
+	return consumer
+}
+
+func (sqlScaleStruct *SqlStruct) DoQueryParseValue(sqlStr string) string {
+	rows := sqlScaleStruct.doQuery(sqlStr)
+	var optionName string
+	var value string
+	for rows.Next() {
+		err := rows.Scan(&optionName, &value)
+		if err != nil {
+			log.Println(err)
+		}
+	}
+	return value
+}
+
+func (sqlScaleStruct *SqlStruct) DoClose() {
+	sqlScaleStruct.Connection.Close()
 }
