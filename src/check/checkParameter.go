@@ -95,4 +95,9 @@ func DoCheckParameter(template string) {
 			}
 		}
 	}
+
+	defer func() {
+		BaseParameter.DoClose()
+		ClusterParameter.DoClose()
+	}()
 }
