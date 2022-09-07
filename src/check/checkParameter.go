@@ -53,6 +53,19 @@ func DoCheckParameter(template string) {
 
 			case "federated":
 
+			case "ssl":
+				strSql = fmt.Sprintf("show variables like '%s'", "have_openssl")
+				value := strings.ToLower(ClusterParameter.DoQueryParseValue(strSql))
+				baseValue := strings.ToLower(configuration[i].Value)
+				if value == "disabled" {
+					value = "off"
+				} else if value == "yes" {
+					value = "on"
+				}
+
+				if value != baseValue {
+					log.Println(fmt.Sprintf("[实例 %s]参数：%s 基准值为：%s,实际值为：%s", TargetSocket, configuration[i].Name, configuration[i].Value, value))
+				}
 			case "default-time-zone":
 				configuration[i].Name = "time_zone"
 				fallthrough
