@@ -47,9 +47,9 @@ func DoCheck() {
 
 	// 如果slave读取的binlog文件和主库当前binlog文件不相等，说明延迟很大，直接返回2，不需要进行下面比较
 	if masterStatus.File != slaveStatus.MasterLogFile {
-		log.Printf("")
-		fmt.Println(rs)
-		return
+		log.Printf("备集群此刻读取主集群的binlog文件和主集群生产的binlog文件不相等，")
+		//fmt.Println(rs)
+		//return
 	}
 
 	// 获取主集群执行的gtid

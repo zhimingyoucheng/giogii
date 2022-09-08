@@ -13,10 +13,10 @@ func main() {
 	var targetSocket string
 	var parameter string
 
-	flag.StringVar(&sourceUserInfo, "s", "root:drACgwoqtM", "")
-	flag.StringVar(&sourceSocket, "si", "172.17.128.49:13336", "")
+	flag.StringVar(&sourceUserInfo, "s", "admin:!QAZ2wsx", "")
+	flag.StringVar(&sourceSocket, "si", "172.17.128.227:16310", "")
 	flag.StringVar(&targetUserInfo, "t", "admin:!QAZ2wsx", "")
-	flag.StringVar(&targetSocket, "ti", "172.17.128.13:16310", "")
+	flag.StringVar(&targetSocket, "ti", "172.17.128.165:16310", "")
 	flag.StringVar(&parameter, "c", "", "")
 	flag.Parse()
 
