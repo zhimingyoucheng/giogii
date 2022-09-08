@@ -39,9 +39,12 @@ open_files_limit = ulimit -n  8.0.19以后
 
 ### 编译
 ```shell
+# x86环境
 cd giogii/
 CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build
 
+# arm环境
+cd giogii/
 CGO_ENABLED=0 GOOS=linux GOARCH=arm64 GOARM=7 go build
 
 ```
