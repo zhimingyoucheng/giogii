@@ -1,4 +1,4 @@
-### A tool for comparing data between primary cluster and Dr Clusters
+### 主备集群数据比对、基线参数比对
 
 ```shell
 master_info_repository = TABLE
@@ -20,7 +20,7 @@ open_files_limit = ulimit -n  8.0.19以后
 ```
 
 
-### quick start
+### 使用方法
 ```shell
 # 主从集群数据比对工具使用方法
 # s 源端集群信息 si 源端连接信息  t 目标端集群信息  ti 目标端连接信息
@@ -36,7 +36,7 @@ open_files_limit = ulimit -n  8.0.19以后
 # 检查结果会打印到控制台
 ```
 
-### mac build x86 and arm
+### 编译
 ```shell
 cd giogii/
 CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build
