@@ -26,7 +26,7 @@ func InitAllConn(sourceUserInfo string, sourceSocket string, sourceDatabase stri
 	return
 }
 
-func InitSourceStruct(sourceUserInfo string, sourceSocket string, sourceDatabase string) (s SqlStruct) {
+func InitSourceConn(sourceUserInfo string, sourceSocket string, sourceDatabase string) (s SqlStruct) {
 
 	s = SqlStruct{
 		MaxIdleConn:  1,
