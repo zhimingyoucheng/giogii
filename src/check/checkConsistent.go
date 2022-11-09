@@ -13,7 +13,7 @@ var MasterSqlScaleOperator mapper.SqlScaleOperator
 var SlaveSqlScaleOperator mapper.SqlScaleOperator
 
 func InitCheckConsistentConf(sourceUserInfo string, sourceSocket string, sourceDatabase string, targetUserInfo string, targetSocket string, targetDatabase string) {
-	s, t := mapper.InitConfig(sourceUserInfo, sourceSocket, sourceDatabase, targetUserInfo, targetSocket, targetDatabase)
+	s, t := mapper.InitAllConn(sourceUserInfo, sourceSocket, sourceDatabase, targetUserInfo, targetSocket, targetDatabase)
 	MasterSqlScaleOperator = &s
 	SlaveSqlScaleOperator = &t
 }

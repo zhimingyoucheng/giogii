@@ -12,7 +12,7 @@ var ClusterParameter mapper.SqlScaleOperator
 var TargetSocket string
 
 func InitCheckParameterConf(sourceUserInfo string, sourceSocket string, sourceDatabase string, targetUserInfo string, targetSocket string, targetDatabase string) {
-	s, t := mapper.InitConfig(sourceUserInfo, sourceSocket, sourceDatabase, targetUserInfo, targetSocket, targetDatabase)
+	s, t := mapper.InitAllConn(sourceUserInfo, sourceSocket, sourceDatabase, targetUserInfo, targetSocket, targetDatabase)
 	BaseParameter = &s
 	ClusterParameter = &t
 	TargetSocket = targetSocket
