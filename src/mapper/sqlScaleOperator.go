@@ -13,6 +13,7 @@ type SqlScaleOperator interface {
 	DoQueryParseParameter(sqlStr string, args string) (c []entity.Configuration)
 	DoQueryParseConsumers(sqlStr string, args string) entity.Consumers
 	DoQueryParseValue(sqlStr string) string
+	DoQueryParseToBigTransaction(sqlStr string) (bt []entity.BigTransaction)
 	DoClose()
 }
 
@@ -92,6 +93,16 @@ func (sqlScaleStruct *SqlStruct) DoQueryParseValue(sqlStr string) string {
 		}
 	}
 	return value
+}
+
+func (sqlScaleStruct *SqlStruct) DoQueryParseToBigTransaction(sqlStr string) (b []entity.BigTransaction) {
+	rows := sqlScaleStruct.doQuery(sqlStr)
+	for rows.Next() {
+		var bt entity.BigTransaction
+		rows.Scan(&bt.ThreadId, &bt.LockCount, &bt.ProcesslistId, &bt.ProcesslistUser, &bt.ProcesslistHost, &bt.SqlText)
+		b = append(b, bt)
+	}
+	return b
 }
 
 func (sqlScaleStruct *SqlStruct) DoClose() {
