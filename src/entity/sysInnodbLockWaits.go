@@ -1,36 +1,36 @@
 package entity
 
-import "time"
+import "database/sql"
 
 type SysInnodbLockWaits struct {
-	waitStarted               time.Time
-	waitAge                   time.Time
-	waitAgeSecs               *int64
-	lockedTable               string
-	lockedTableSchema         string
-	lockedTableName           string
-	lockedTablePartition      string
-	lockedTableSubpartition   string
-	lockedIndex               string
-	lockedType                string
-	waitingTrxId              *int64
-	waitingTrxStarted         time.Time
-	waitingTrxAge             time.Time
-	waitingTrxRowsLocked      *int64
-	waitingTrxRowsModified    *int64
-	waitingPid                *int64
-	waitingQuery              string
-	waitingLockId             string
-	waitingLockMode           string
-	blockingTrxId             *int64
-	blockingPid               *int64
-	blockingQuery             string
-	blockingLockId            string
-	blockingLockMode          string
-	blockingTrxStarted        time.Time
-	blockingTrxAge            time.Time
-	blockingTrxRowsLocked     *int64
-	blockingTrxRowsModified   *int64
-	sqlKillBlockingQuery      string
-	sqlKillBlockingConnection string
+	WaitStarted               sql.NullString
+	WaitAge                   sql.NullString
+	WaitAgeSecs               *int64
+	LockedTable               sql.NullString
+	LockedTableSchema         sql.NullString
+	LockedTableName           sql.NullString
+	LockedTablePartition      sql.NullString
+	LockedTableSubpartition   sql.NullString
+	LockedIndex               sql.NullString
+	LockedType                sql.NullString
+	WaitingTrxId              *int64
+	WaitingTrxStarted         sql.NullString
+	WaitingTrxAge             sql.NullString
+	WaitingTrxRowsLocked      *int64
+	WaitingTrxRowsModified    *int64
+	WaitingPid                *int64
+	WaitingQuery              sql.NullString
+	WaitingLockId             sql.NullString
+	WaitingLockMode           sql.NullString
+	BlockingTrxId             *int64
+	BlockingPid               *int64
+	BlockingQuery             sql.NullString
+	BlockingLockId            sql.NullString
+	BlockingLockMode          sql.NullString
+	BlockingTrxStarted        sql.NullString
+	BlockingTrxAge            sql.NullString
+	BlockingTrxRowsLocked     *int64
+	BlockingTrxRowsModified   *int64
+	SqlKillBlockingQuery      sql.NullString
+	SqlKillBlockingConnection sql.NullString
 }

@@ -7,14 +7,21 @@ import (
 )
 
 type SqlScaleOperator interface {
+	DoClose()
 	DoQueryParseMaster(sqlStr string) entity.MasterStatus
 	DoQueryParseSlave(sqlStr string) entity.SlaveStatus
 	DoQueryParseString(sqlStr string) string
 	DoQueryParseParameter(sqlStr string, args string) (c []entity.Configuration)
 	DoQueryParseConsumers(sqlStr string, args string) entity.Consumers
 	DoQueryParseValue(sqlStr string) string
+	DoQueryParseSingleValue(sqlStr string) string
 	DoQueryParseToBigTransaction(sqlStr string) (bt []entity.BigTransaction)
-	DoClose()
+	DoQueryParseToMetadataLocks(sqlStr string) (ml []entity.MetadataLocks)
+	DoQueryParseToSysInnodbLockWaits(sqlStr string) (ml []entity.SysInnodbLockWaits)
+}
+
+func (sqlScaleStruct *SqlStruct) DoClose() {
+	sqlScaleStruct.Connection.Close()
 }
 
 func (sqlScaleStruct *SqlStruct) DoQueryParseMaster(sqlStr string) entity.MasterStatus {
@@ -95,6 +102,18 @@ func (sqlScaleStruct *SqlStruct) DoQueryParseValue(sqlStr string) string {
 	return value
 }
 
+func (sqlScaleStruct *SqlStruct) DoQueryParseSingleValue(sqlStr string) string {
+	rows := sqlScaleStruct.doQuery(sqlStr)
+	var value string
+	for rows.Next() {
+		err := rows.Scan(&value)
+		if err != nil {
+			log.Println(err)
+		}
+	}
+	return value
+}
+
 func (sqlScaleStruct *SqlStruct) DoQueryParseToBigTransaction(sqlStr string) (b []entity.BigTransaction) {
 	rows := sqlScaleStruct.doQuery(sqlStr)
 	for rows.Next() {
@@ -105,6 +124,27 @@ func (sqlScaleStruct *SqlStruct) DoQueryParseToBigTransaction(sqlStr string) (b 
 	return b
 }
 
-func (sqlScaleStruct *SqlStruct) DoClose() {
-	sqlScaleStruct.Connection.Close()
+func (sqlScaleStruct *SqlStruct) DoQueryParseToMetadataLocks(sqlStr string) (ml []entity.MetadataLocks) {
+	rows := sqlScaleStruct.doQuery(sqlStr)
+	for rows.Next() {
+		var m entity.MetadataLocks
+		rows.Scan(&m.LockType, &m.LockStatus, &m.ProcesslistId, &m.ProcesslistState, &m.ProcesslistInfo)
+		ml = append(ml, m)
+	}
+	return ml
+}
+
+func (sqlScaleStruct *SqlStruct) DoQueryParseToSysInnodbLockWaits(sqlStr string) (lw []entity.SysInnodbLockWaits) {
+	rows := sqlScaleStruct.doQuery(sqlStr)
+	for rows.Next() {
+		var l entity.SysInnodbLockWaits
+		rows.Scan(&l.WaitStarted, &l.WaitAge, &l.WaitAgeSecs, &l.LockedTable, &l.LockedTableSchema,
+			&l.LockedTableName, &l.LockedTablePartition, &l.LockedTableSubpartition, &l.LockedIndex, &l.LockedType,
+			&l.WaitingTrxId, &l.WaitingTrxStarted, &l.WaitingTrxAge, &l.WaitingTrxRowsLocked, &l.WaitingTrxRowsModified,
+			&l.WaitingPid, &l.WaitingQuery, &l.WaitingLockId, &l.WaitingLockMode, &l.BlockingTrxId,
+			&l.BlockingPid, &l.BlockingQuery, &l.BlockingLockId, &l.BlockingLockMode, &l.BlockingTrxStarted,
+			&l.BlockingTrxAge, &l.BlockingTrxRowsLocked, &l.BlockingTrxRowsModified, &l.SqlKillBlockingQuery, &l.SqlKillBlockingConnection)
+		lw = append(lw, l)
+	}
+	return lw
 }

@@ -26,15 +26,15 @@ func TestM(t *testing.T) {
 	flag.StringVar(&sourceSocket, "si", "172.17.139.27:16310", "")
 	flag.StringVar(&targetUserInfo, "t", "root:!QAZ2wsx", "")
 	flag.StringVar(&targetSocket, "ti", "172.17.140.3:16310", "")
-	flag.StringVar(&parameter, "", "", "")
-	flag.StringVar(&bigTrx, "b", "b", "")
+	flag.StringVar(&parameter, "c", "", "")
+	flag.StringVar(&bigTrx, "m", "m", "")
 
 	flag.Parse()
 
-	if strings.Trim(parameter, " ") != "" {
+	if strings.Trim(parameter, " ") == "c" {
 		check.InitCheckParameterConf(sourceUserInfo, sourceSocket, "greatrds", targetUserInfo, targetSocket, "information_schema")
 		check.DoCheckParameter(parameter)
-	} else if strings.Trim(bigTrx, " ") == "b" {
+	} else if strings.Trim(bigTrx, " ") == "m" {
 		lock.InitConf(sourceUserInfo, sourceSocket, "performance_schema")
 		lock.DoMonitorLock()
 	} else {

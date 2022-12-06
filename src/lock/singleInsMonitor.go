@@ -82,31 +82,58 @@ func DoMonitorLock() {
 	}()
 
 	/**
-	1） 判断是否有长时间运行的事务，长事务一直不提交会阻塞后续。  -L l
+	1） 判断是否有长时间运行的事务  -L l
 	*/
+	// 1.1 超过60秒的事务有几个
+	strSql = fmt.Sprint("select count(*) from information_schema.INNODB_TRX i inner join information_schema.PROCESSLIST p on i.trx_mysql_thread_id = p.ID where p.TIME > 60")
+	trxLongerThanSixtySecondCount := SourceSqlMapper.DoQueryParseSingleValue(strSql)
+	count, _ := strconv.Atoi(trxLongerThanSixtySecondCount)
+	if count > 0 {
+		log.Printf("超过60秒的事务>  共计: %s 个", trxLongerThanSixtySecondCount)
+		//strSql = fmt.Sprint("select p.ID, p.USER, p.HOST, p.DB, p.TIME, s.SQL_TEXT from information_schema.INNODB_TRX i inner join information_schema.PROCESSLIST p on i.trx_mysql_thread_id = p.ID inner join performance_schema.threads t on i.trx_mysql_thread_id = t.PROCESSLIST_ID inner join performance_schema.events_statements_current s on t.THREAD_ID = s.THREAD_ID")
+	}
 
 	/**
 	2) 判断当前环境是否有大事务锁了多行  -L t
 	select count(*) from data_locks where LOCK_MODE <> 'IX';
 	select THREAD_ID,count(THREAD_ID) from performance_schema.data_locks where LOCK_MODE <> 'IX' group by THREAD_ID;
 	*/
-	strSql = fmt.Sprint("select l.THREAD_ID,l.LOCK_COUNT ,t.PROCESSLIST_ID,t.PROCESSLIST_USER,t.PROCESSLIST_HOST ,p.SQL_TEXT from (select THREAD_ID,count(THREAD_ID) as LOCK_COUNT from performance_schema.data_locks where LOCK_MODE <> 'IX' group by THREAD_ID) l left join performance_schema.threads t on l.THREAD_ID = t.THREAD_ID left join performance_schema.events_statements_current p  on l.THREAD_ID = p.THREAD_ID;")
+	strSql = fmt.Sprint("select l.THREAD_ID,l.LOCK_COUNT ,t.PROCESSLIST_ID,t.PROCESSLIST_USER,t.PROCESSLIST_HOST ,p.SQL_TEXT from (select THREAD_ID,count(THREAD_ID) as LOCK_COUNT from performance_schema.data_locks where LOCK_MODE <> 'IX' and LOCK_TYPE <> 'TABLE' group by THREAD_ID) l left join performance_schema.threads t on l.THREAD_ID = t.THREAD_ID left join performance_schema.events_statements_current p  on l.THREAD_ID = p.THREAD_ID;")
 	bt := SourceSqlMapper.DoQueryParseToBigTransaction(strSql)
 	for i := 0; i < len(bt); i++ {
 		b := bt[i]
 		if *b.LockCount > 0 {
-			log.Print("大事务行锁检查> ", " 锁定行数为: ", *b.LockCount, "; PROCESS_ID为: ", *b.ProcesslistId, "; 连接主机为: ", b.ProcesslistHost, "; 连接用户为: ", b.ProcesslistUser, "; 执行SQL为: ", b.SqlText)
+			log.Print("大事务行锁检查> ", " 锁定行数: ", *b.LockCount, "; PROCESS_ID: ", *b.ProcesslistId, "; 连接主机: ", b.ProcesslistHost, "; 连接用户: ", b.ProcesslistUser, "; 执行SQL: ", b.SqlText)
 		}
 	}
 
 	/**
 	3）判断当前环境是否存在锁等待   -L w
+	等待时长要记录
 	*/
 	strSql = fmt.Sprint("show status like 'Innodb_row_lock_current_waits'")
 	innodbRowLockCurrentWaits := SourceSqlMapper.DoQueryParseString(strSql)
 	value, _ := strconv.Atoi(innodbRowLockCurrentWaits) //strconv.ParseInt(innodbRowLockCurrentWaits, 10, 64)
 	if value > 0 {                                      // 如果正在等待锁的值大于0，
-		log.Print("行锁锁等待检查> ", " 当前环境存在锁等待，", value)
+		log.Print("行锁锁等待检查> ", " 当前环境至少存在", value, "个锁等待")
+		strSql = fmt.Sprint("select * from sys.innodb_lock_waits")
+		lw := SourceSqlMapper.DoQueryParseToSysInnodbLockWaits(strSql)
+		for i := 0; i < len(lw); i++ {
+			l := lw[i]
+			log.Print("(", i+1, ") 语句> ", " ", l.WaitingQuery.String, " ; 被PROCESS_ID : ", *l.BlockingPid, " 阻塞;", " 可执行: ", l.SqlKillBlockingQuery.String, " 解除; ")
+		}
+	}
+
+	/**
+	4) 判断当前环境是否存在MDL锁等待且阻塞现象
+	*/
+
+	strSql = fmt.Sprint("select m.LOCK_TYPE,m.LOCK_STATUS, t.PROCESSLIST_ID,t.PROCESSLIST_STATE,t.PROCESSLIST_INFO from performance_schema.metadata_locks m inner join performance_schema.threads t on m.OWNER_THREAD_ID = t.THREAD_ID where m.LOCK_STATUS = 'PENDING'")
+	ml := SourceSqlMapper.DoQueryParseToMetadataLocks(strSql)
+
+	for i := 0; i < len(ml); i++ {
+		m := ml[i]
+		log.Print("MDL锁检查> ", " 锁状态: ", m.LockStatus, "; PROCESS_ID: ", *m.ProcesslistId, "; PROCESSLIST_STATE: ", m.ProcesslistState, "; 执行SQL: ", m.ProcesslistInfo)
 	}
 
 }
