@@ -100,10 +100,12 @@ func DoMonitorLock() {
 	*/
 	strSql = fmt.Sprint("select l.THREAD_ID,l.LOCK_COUNT ,t.PROCESSLIST_ID,t.PROCESSLIST_USER,t.PROCESSLIST_HOST ,p.SQL_TEXT from (select THREAD_ID,count(THREAD_ID) as LOCK_COUNT from performance_schema.data_locks where LOCK_MODE <> 'IX' and LOCK_TYPE <> 'TABLE' group by THREAD_ID) l left join performance_schema.threads t on l.THREAD_ID = t.THREAD_ID left join performance_schema.events_statements_current p  on l.THREAD_ID = p.THREAD_ID;")
 	bt := SourceSqlMapper.DoQueryParseToBigTransaction(strSql)
-	for i := 0; i < len(bt); i++ {
-		b := bt[i]
-		if *b.LockCount > 0 {
-			log.Print("大事务行锁检查> ", " 锁定行数: ", *b.LockCount, "; PROCESS_ID: ", *b.ProcesslistId, "; 连接主机: ", b.ProcesslistHost, "; 连接用户: ", b.ProcesslistUser, "; 执行SQL: ", b.SqlText)
+	if len(bt) > 0 {
+		for i := 0; i < len(bt); i++ {
+			b := bt[i]
+			if *b.LockCount > 0 {
+				log.Print("大事务行锁检查> ", " 锁定行数: ", *b.LockCount, "; PROCESS_ID: ", *b.ProcesslistId, "; 连接主机: ", b.ProcesslistHost, "; 连接用户: ", b.ProcesslistUser, "; 执行SQL: ", b.SqlText)
+			}
 		}
 	}
 
@@ -118,9 +120,11 @@ func DoMonitorLock() {
 		log.Print("行锁锁等待检查> ", " 当前环境至少存在", value, "个锁等待")
 		strSql = fmt.Sprint("select * from sys.innodb_lock_waits")
 		lw := SourceSqlMapper.DoQueryParseToSysInnodbLockWaits(strSql)
-		for i := 0; i < len(lw); i++ {
-			l := lw[i]
-			log.Print("(", i+1, ") 语句> ", " ", l.WaitingQuery.String, " ; 被PROCESS_ID : ", *l.BlockingPid, " 阻塞;", " 可执行: ", l.SqlKillBlockingQuery.String, " 解除; ")
+		if len(lw) > 0 {
+			for i := 0; i < len(lw); i++ {
+				l := lw[i]
+				log.Print("(", i+1, ") 语句> ", " ", l.WaitingQuery.String, " ; 被PROCESS_ID : ", *l.BlockingPid, " 阻塞;", " 可执行: ", l.SqlKillBlockingQuery.String, " 解除; ")
+			}
 		}
 	}
 
@@ -128,12 +132,13 @@ func DoMonitorLock() {
 	4) 判断当前环境是否存在MDL锁等待且阻塞现象
 	*/
 
-	strSql = fmt.Sprint("select m.LOCK_TYPE,m.LOCK_STATUS, t.PROCESSLIST_ID,t.PROCESSLIST_STATE,t.PROCESSLIST_INFO from performance_schema.metadata_locks m inner join performance_schema.threads t on m.OWNER_THREAD_ID = t.THREAD_ID where m.LOCK_STATUS = 'PENDING'")
+	strSql = fmt.Sprint("select m.OBJECT_TYPE,m.LOCK_TYPE,m.LOCK_STATUS, t.PROCESSLIST_ID,t.PROCESSLIST_TIME,t.PROCESSLIST_INFO from performance_schema.metadata_locks m inner join performance_schema.threads t on m.OWNER_THREAD_ID = t.THREAD_ID where m.LOCK_STATUS = 'PENDING' order by t.PROCESSLIST_TIME DESC ")
 	ml := SourceSqlMapper.DoQueryParseToMetadataLocks(strSql)
-
-	for i := 0; i < len(ml); i++ {
-		m := ml[i]
-		log.Print("MDL锁检查> ", " 锁状态: ", m.LockStatus, "; PROCESS_ID: ", *m.ProcesslistId, "; PROCESSLIST_STATE: ", m.ProcesslistState, "; 执行SQL: ", m.ProcesslistInfo)
+	if len(ml) > 0 {
+		for i := 0; i < len(ml); i++ {
+			m := ml[i]
+			log.Print("MDL锁检查> ", " 锁对象类型: ", m.ObjectType, "; 锁状态: ", m.LockStatus, "; PROCESS_ID: ", *m.ProcesslistId, "; 执行时间: ", m.ProcesslistTime, "; 执行SQL: ", m.ProcesslistInfo)
+		}
 	}
 
 }

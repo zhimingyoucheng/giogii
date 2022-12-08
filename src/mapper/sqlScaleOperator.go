@@ -128,7 +128,7 @@ func (sqlScaleStruct *SqlStruct) DoQueryParseToMetadataLocks(sqlStr string) (ml 
 	rows := sqlScaleStruct.doQuery(sqlStr)
 	for rows.Next() {
 		var m entity.MetadataLocks
-		rows.Scan(&m.LockType, &m.LockStatus, &m.ProcesslistId, &m.ProcesslistState, &m.ProcesslistInfo)
+		rows.Scan(&m.ObjectType, &m.LockType, &m.LockStatus, &m.ProcesslistId, &m.ProcesslistTime, &m.ProcesslistInfo)
 		ml = append(ml, m)
 	}
 	return ml
