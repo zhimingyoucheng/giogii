@@ -93,7 +93,7 @@ func AddBackupCluster(host string, port string, user string, password string) {
 	strSql = fmt.Sprintf("dbscale dynamic ADD DATASERVER server_name=slave_dbscale_server,server_host=\"%s\",server_port=%s,server_user=\"%s\",server_password=\"%s\",dbscale_server", host, port, user, password)
 	MasterSqlMapper.DoQueryWithoutRes(strSql)
 
-	strSql = fmt.Sprintf("dbscale dynamic add server datasource slave_dbscale_source slave_dbscale_server-1-1000-400-800 group_id = 201;")
+	strSql = fmt.Sprintf("dbscale dynamic add server datasource slave_dbscale_source slave_dbscale_server-1-1000-400-800 group_id = 201")
 	MasterSqlMapper.DoQueryWithoutRes(strSql)
 
 	strSql = fmt.Sprintf("dbscale dynamic add slave slave_dbscale_source to normal_0")
@@ -360,7 +360,7 @@ func DoEndFlashback(targetUserInfo string, targetSocket string, sshUser string, 
 		log.Println("修复flashback完成")
 		time.Sleep(5 * time.Second)
 		socket := strings.Split(targetSocket, ":")
-		AddBackupCluster(fields[0], fields[1], socket[0], socket[1])
+		AddBackupCluster(socket[0], socket[1], fields[0], fields[1])
 		wg.Done()
 	}()
 	wg.Wait()
