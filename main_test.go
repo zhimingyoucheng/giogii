@@ -51,7 +51,7 @@ func TestM(t *testing.T) {
 	} else if strings.Trim(ssh, " ") == "end" {
 		flashback.InitMasterConnection(sourceUserInfo, sourceSocket)
 		flashback.InitSlaveConnection(targetUserInfo, targetSocket)
-		flashback.DoEndFlashback(targetUserInfo, targetSocket, sshUser, sshPass)
+		flashback.DoEndFlashback(sourceUserInfo, targetUserInfo, targetSocket, sshUser, sshPass)
 	} else {
 		check.InitCheckConsistentConf(sourceUserInfo, sourceSocket, "information_schema", targetUserInfo, targetSocket, "information_schema")
 		check.DoCheck()

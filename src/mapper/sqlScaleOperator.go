@@ -21,6 +21,7 @@ type SqlScaleOperator interface {
 	DoQueryParseMap(sqlStr string) (m map[string]string)
 	DoQueryParseToDataServers(sqlStr string) (d []entity.DataServers)
 	DoQueryWithoutRes(sqlStr string)
+	DoQueryParseToClusterInfo(sqlStr string) (c []entity.ClusterInfo)
 }
 
 func (sqlScaleStruct *SqlStruct) DoClose() {
@@ -177,4 +178,15 @@ func (sqlScaleStruct *SqlStruct) DoQueryParseToDataServers(sqlStr string) (d []e
 
 func (sqlScaleStruct *SqlStruct) DoQueryWithoutRes(sqlStr string) {
 	sqlScaleStruct.doQuery(sqlStr)
+}
+
+func (sqlScaleStruct *SqlStruct) DoQueryParseToClusterInfo(sqlStr string) (c []entity.ClusterInfo) {
+	rows := sqlScaleStruct.doQuery(sqlStr)
+	for rows.Next() {
+		var ds entity.ClusterInfo
+		rows.Scan(&ds.MasterDbscale, &ds.ClusterServerId, &ds.Host, &ds.JoinTime, &ds.KaInitVersion, &ds.KaUpdateVersion,
+			&ds.DynamicNodeVersion, &ds.DynamicSpaceVersion, &ds.MasterReScrambleDelay, &ds.DbscaleVersion)
+		c = append(c, ds)
+	}
+	return
 }

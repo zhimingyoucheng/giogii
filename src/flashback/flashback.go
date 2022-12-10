@@ -50,6 +50,11 @@ func InitMasterConnection(sourceUserInfo string, sourceSocket string) {
 	MasterSqlMapper = &s
 }
 
+func InitTmpConnection(sourceUserInfo string, sourceSocket string) (s mapper.SqlStruct) {
+	s = mapper.InitSourceConn(sourceUserInfo, sourceSocket, "information_schema")
+	return
+}
+
 func InitSlaveConnection(sourceUserInfo string, sourceSocket string) {
 	s := mapper.InitSourceConn(sourceUserInfo, sourceSocket, "information_schema")
 	SlaveSqlMapper = &s
@@ -88,12 +93,26 @@ func RemoveSlaveCluster() {
 	MasterSqlMapper.DoQueryWithoutRes(strSql)
 }
 
-func AddBackupCluster(host string, port string, user string, password string) {
+func AddBackupCluster(sourceUserInfo string, host string, port string, user string, password string) {
 	var strSql string
+	var id string
+	strSql = fmt.Sprintf("dbscale request cluster info")
+	info := MasterSqlMapper.DoQueryParseToClusterInfo(strSql)
+	if len(info) > 0 {
+		for i := 0; i < len(info); i++ {
+			if info[i].MasterDbscale == "master" {
+				tmpConnection := InitTmpConnection(sourceUserInfo, info[i].Host)
+				strSql = fmt.Sprintf("dbscale request next group id")
+				id = tmpConnection.DoQueryParseSingleValue(strSql)
+				tmpConnection.DoClose()
+			}
+		}
+	}
+
 	strSql = fmt.Sprintf("dbscale dynamic ADD DATASERVER server_name=slave_dbscale_server,server_host=\"%s\",server_port=%s,server_user=\"%s\",server_password=\"%s\",dbscale_server", host, port, user, password)
 	MasterSqlMapper.DoQueryWithoutRes(strSql)
 
-	strSql = fmt.Sprintf("dbscale dynamic add server datasource slave_dbscale_source slave_dbscale_server-1-1000-400-800 group_id = 201")
+	strSql = fmt.Sprintf("dbscale dynamic add server datasource slave_dbscale_source slave_dbscale_server-1-1000-400-800 group_id = %s", id)
 	MasterSqlMapper.DoQueryWithoutRes(strSql)
 
 	strSql = fmt.Sprintf("dbscale dynamic add slave slave_dbscale_source to normal_0")
@@ -103,11 +122,11 @@ func AddBackupCluster(host string, port string, user string, password string) {
 func StartSlave() {
 	var strSql string
 	strSql = fmt.Sprint("dbscale set global 'enable-slave-dbscale-server'=1")
-	SlaveStatus = SlaveSqlMapper.DoQueryParseSlave(strSql)
+	SlaveSqlMapper.DoQueryWithoutRes(strSql)
 	strSql = fmt.Sprint("dbscale set global 'slave-dbscale-mode'=1")
-	SlaveStatus = SlaveSqlMapper.DoQueryParseSlave(strSql)
+	SlaveSqlMapper.DoQueryWithoutRes(strSql)
 	strSql = fmt.Sprint("start slave")
-	SlaveStatus = SlaveSqlMapper.DoQueryParseSlave(strSql)
+	SlaveSqlMapper.DoQueryWithoutRes(strSql)
 }
 
 func AddData() {
@@ -310,7 +329,7 @@ func DoStartFlashback(targetUserInfo string, targetSocket string, sshUser string
 
 }
 
-func DoEndFlashback(targetUserInfo string, targetSocket string, sshUser string, sshPass string) {
+func DoEndFlashback(sourceUserInfo string, targetUserInfo string, targetSocket string, sshUser string, sshPass string) {
 
 	p, s, j := GetSshIp()
 
@@ -380,7 +399,7 @@ func DoEndFlashback(targetUserInfo string, targetSocket string, sshUser string, 
 
 		AddData()
 		time.Sleep(5 * time.Second)
-		AddBackupCluster(socket[0], socket[1], fields[0], fields[1])
+		AddBackupCluster(sourceUserInfo, socket[0], socket[1], fields[0], fields[1])
 		time.Sleep(2 * time.Second)
 		StartSlave()
 		wg.Done()
