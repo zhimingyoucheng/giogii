@@ -100,6 +100,14 @@ func AddBackupCluster(host string, port string, user string, password string) {
 	MasterSqlMapper.DoQueryWithoutRes(strSql)
 }
 
+func AddData() {
+	var strSql string
+	strSql = fmt.Sprintf("create database a")
+	MasterSqlMapper.DoQueryWithoutRes(strSql)
+	strSql = fmt.Sprintf("drop database a")
+	MasterSqlMapper.DoQueryWithoutRes(strSql)
+}
+
 func CloseReplication() {
 	var strSql string
 	strSql = fmt.Sprint("stop slave")
@@ -353,13 +361,15 @@ func DoEndFlashback(targetUserInfo string, targetSocket string, sshUser string, 
 		EnableReadOnly()
 
 		log.Println("准备修复flashback")
+		socket := strings.Split(targetSocket, ":")
 		fields := strings.Split(targetUserInfo, ":")
 		scriptStr := fmt.Sprintf("/data/app/mysql-8.0.26/bin/mysql -u%s -p%s -h%s -P%s -e \"stop slave;reset slave all;\"", fields[0], fields[1], MasterHost, MasterPort)
 		result, _ := primaryClient.Run(scriptStr)
 		log.Println(result)
 		log.Println("修复flashback完成")
+
+		AddData()
 		time.Sleep(5 * time.Second)
-		socket := strings.Split(targetSocket, ":")
 		AddBackupCluster(socket[0], socket[1], fields[0], fields[1])
 		wg.Done()
 	}()
