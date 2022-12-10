@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"giogii/src/check"
+	"giogii/src/flashback"
 	"giogii/src/lock"
 	"strings"
 	"testing"
@@ -15,6 +16,9 @@ func TestM(t *testing.T) {
 	var targetSocket string
 	var parameter string
 	var bigTrx string
+	var ssh string
+	var sshUser string
+	var sshPass string
 
 	/*flag.StringVar(&sourceUserInfo, "s", "root:drACgwoqtM", "")
 	flag.StringVar(&sourceSocket, "si", "172.17.128.49:13336", "")
@@ -23,11 +27,14 @@ func TestM(t *testing.T) {
 	flag.StringVar(&parameter, "c", "8c32gb", "")*/
 
 	flag.StringVar(&sourceUserInfo, "s", "admin:!QAZ2wsx", "")
-	flag.StringVar(&sourceSocket, "si", "172.17.139.27:16310", "")
-	flag.StringVar(&targetUserInfo, "t", "root:!QAZ2wsx", "")
-	flag.StringVar(&targetSocket, "ti", "172.17.140.3:16310", "")
+	flag.StringVar(&sourceSocket, "si", "172.17.139.26:16310", "")
+	flag.StringVar(&targetUserInfo, "t", "admin:!QAZ2wsx", "")
+	flag.StringVar(&targetSocket, "ti", "172.17.128.151:16310", "")
 	flag.StringVar(&parameter, "c", "", "")
-	flag.StringVar(&bigTrx, "m", "m", "")
+	flag.StringVar(&bigTrx, "m", "", "")
+	flag.StringVar(&ssh, "f", "end", "")
+	flag.StringVar(&sshUser, "u", "mysql", "")
+	flag.StringVar(&sshPass, "p", "mysql", "")
 
 	flag.Parse()
 
@@ -37,6 +44,14 @@ func TestM(t *testing.T) {
 	} else if strings.Trim(bigTrx, " ") == "m" {
 		lock.InitConf(sourceUserInfo, sourceSocket, "performance_schema")
 		lock.DoMonitorLock()
+	} else if strings.Trim(ssh, " ") == "start" {
+		flashback.InitMasterConnection(sourceUserInfo, sourceSocket)
+		flashback.InitSlaveConnection(targetUserInfo, targetSocket)
+		flashback.DoStartFlashback(targetUserInfo, targetSocket, sshUser, sshPass)
+	} else if strings.Trim(ssh, " ") == "end" {
+		flashback.InitMasterConnection(sourceUserInfo, sourceSocket)
+		flashback.InitSlaveConnection(targetUserInfo, targetSocket)
+		flashback.DoEndFlashback(targetUserInfo, targetSocket, sshUser, sshPass)
 	} else {
 		check.InitCheckConsistentConf(sourceUserInfo, sourceSocket, "information_schema", targetUserInfo, targetSocket, "information_schema")
 		check.DoCheck()

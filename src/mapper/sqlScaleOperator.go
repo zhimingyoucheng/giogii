@@ -18,6 +18,9 @@ type SqlScaleOperator interface {
 	DoQueryParseToBigTransaction(sqlStr string) (bt []entity.BigTransaction)
 	DoQueryParseToMetadataLocks(sqlStr string) (ml []entity.MetadataLocks)
 	DoQueryParseToSysInnodbLockWaits(sqlStr string) (ml []entity.SysInnodbLockWaits)
+	DoQueryParseMap(sqlStr string) (m map[string]string)
+	DoQueryParseToDataServers(sqlStr string) (d []entity.DataServers)
+	DoQueryWithoutRes(sqlStr string)
 }
 
 func (sqlScaleStruct *SqlStruct) DoClose() {
@@ -147,4 +150,31 @@ func (sqlScaleStruct *SqlStruct) DoQueryParseToSysInnodbLockWaits(sqlStr string)
 		lw = append(lw, l)
 	}
 	return lw
+}
+
+func (sqlScaleStruct *SqlStruct) DoQueryParseMap(sqlStr string) (m map[string]string) {
+	rows := sqlScaleStruct.doQuery(sqlStr)
+	m = make(map[string]string)
+	for rows.Next() {
+		var key string
+		var value string
+		rows.Scan(key, value)
+		m[key] = value
+	}
+	return m
+}
+
+func (sqlScaleStruct *SqlStruct) DoQueryParseToDataServers(sqlStr string) (d []entity.DataServers) {
+	rows := sqlScaleStruct.doQuery(sqlStr)
+	for rows.Next() {
+		var ds entity.DataServers
+		rows.Scan(&ds.Servername, &ds.Host, &ds.Port, &ds.Username, &ds.Status, &ds.MasterOnlineStatus,
+			&ds.MasterBackup, &ds.RemoteUser, &ds.RemotePort, &ds.MaxNeededConn, &ds.MasterPriority)
+		d = append(d, ds)
+	}
+	return d
+}
+
+func (sqlScaleStruct *SqlStruct) DoQueryWithoutRes(sqlStr string) {
+	sqlScaleStruct.doQuery(sqlStr)
 }

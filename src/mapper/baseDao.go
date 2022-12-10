@@ -35,7 +35,7 @@ func (sqlScaleStruct *SqlStruct) doQuery(sqlStr string) *sql.Rows {
 	con := sqlScaleStruct.Connection
 	rows, err := con.Query(sqlStr)
 	if err != nil {
-		log.Println(fmt.Sprintf("This is a bad connection. SQL info: %s", sqlStr))
+		log.Println(fmt.Sprintf("This is a bad connection. SQL info: %s ;%s", sqlStr, err))
 	}
 	return rows
 }
@@ -45,7 +45,7 @@ func (sqlScaleStruct *SqlStruct) doPrepareQuery(sqlStr string, args string) *sql
 	stmt, _ := connection.Prepare(sqlStr)
 	rows, err := stmt.Query(args)
 	if err != nil {
-		log.Println(fmt.Sprintf("This is a bad connection. SQL info: %s", sqlStr))
+		log.Println(fmt.Sprintf("This is a bad connection. SQL info: %s;%s", sqlStr, err))
 	}
 	return rows
 }

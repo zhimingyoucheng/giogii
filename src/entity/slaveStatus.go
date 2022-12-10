@@ -1,5 +1,7 @@
 package entity
 
+import "database/sql"
+
 type SlaveStatus struct {
 	SlaveIOState              string
 	MasterHost                string
@@ -33,7 +35,7 @@ type SlaveStatus struct {
 	MasterSSLCert             string
 	MasterSSLCipher           string
 	MasterSSLKey              string
-	SecondsBehindMaster       *int
+	SecondsBehindMaster       sql.NullInt64
 	MasterSSLVerifyServerCert string
 	LastIOErrno               *int
 	LastIOError               string
