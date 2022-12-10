@@ -100,6 +100,16 @@ func AddBackupCluster(host string, port string, user string, password string) {
 	MasterSqlMapper.DoQueryWithoutRes(strSql)
 }
 
+func StartSlave() {
+	var strSql string
+	strSql = fmt.Sprint("dbscale set global 'enable-slave-dbscale-server'=1")
+	SlaveStatus = SlaveSqlMapper.DoQueryParseSlave(strSql)
+	strSql = fmt.Sprint("dbscale set global 'slave-dbscale-mode'=1")
+	SlaveStatus = SlaveSqlMapper.DoQueryParseSlave(strSql)
+	strSql = fmt.Sprint("start slave")
+	SlaveStatus = SlaveSqlMapper.DoQueryParseSlave(strSql)
+}
+
 func AddData() {
 	var strSql string
 	strSql = fmt.Sprintf("create database a")
@@ -371,6 +381,8 @@ func DoEndFlashback(targetUserInfo string, targetSocket string, sshUser string, 
 		AddData()
 		time.Sleep(5 * time.Second)
 		AddBackupCluster(socket[0], socket[1], fields[0], fields[1])
+		time.Sleep(2 * time.Second)
+		StartSlave()
 		wg.Done()
 	}()
 	wg.Wait()
