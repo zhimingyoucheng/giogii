@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/pkg/sftp"
 	gossh "golang.org/x/crypto/ssh"
+	"io/ioutil"
 	"log"
 	"net"
 	"os"
@@ -51,14 +52,11 @@ func (c *Client) UploadFile(localFile string, remoteFile string, client *gossh.C
 	}
 	defer dstFile.Close()
 
-	buf := make([]byte, 1024)
-	for {
-		n, _ := srcFile.Read(buf)
-		if n == 0 {
-			break
-		}
-		dstFile.Write(buf)
+	all, err := ioutil.ReadAll(srcFile)
+	if err != nil {
+		log.Fatal(err)
 	}
+	dstFile.Write(all)
 	fmt.Println("upload: copy file to remote server finished!")
 }
 

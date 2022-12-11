@@ -2,17 +2,34 @@
 username=$1
 password=$2
 socket=`find /data/mysqldata/clonebackup/ -name mysql.sock`
-/data/app/mysql-8.0.26/bin/mysql -u${username} -p${password} -S ${socket} -e "shutdown;"
-sleep 2s
-mysqld_safe=`ps -ef | grep mysqld_safe |  grep -v $$ |  awk '{print $8" "$9" "$10" "$11" "$12" "}'`
-a=`echo ${mysqld_safe} | awk '{print $1" "$2" "$3" "$4" "$5" "}'`
-kill -9 `ps -ef | grep mysqld | grep 16| grep -v $$ | awk '{print $2 " " }' | xargs`
 string=`ls /data/mysqldata/`
 array=(${string// /})
+conf=`find /data/mysqldata/16*/ -name *.conf`
+/data/app/mysql-8.0.26/bin/mysql -u${username} -p${password} -S /data/mysqldata/clonebackup/socket/mysql.sock -e "shutdown;"
+echo "shutdown clone node finish"
+sleep 2s
+echo ${mysqld_safe}
+/data/app/mysql-8.0.26/bin/mysql -u${username} -p${password} -S /data/mysqldata/${array}/socket/mysql.sock -e "shutdown;"
+echo "shutdown oldData node finish"
+sleep 2s
 rm -rf /data/mysqldata/${array}/dbdata_bak
 mv /data/mysqldata/${array}/dbdata /data/mysqldata/${array}/dbdata_bak
-sleep 2s
 mv /data/mysqldata/clonebackup/dbdata /data/mysqldata/${array}/
-sleep 2s
-nohup ${a} > /data/mysqldata/${array}/logfile/out.log 2>&1 &
+
+nohup /bin/sh /data/app/mysql-8.0.26/bin/mysqld_safe --defaults-file=${conf} --user=mysql --datadir=/data/mysqldata/${array}/dbdata > /data/mysqldata/${array}/logfile/out.log 2>&1 &
+
+sleep 10s
+args=3
+while [ $args -gt 0 ]
+do
+  echo -n "${args}"
+  CMD=`timeout 4 /data/app/mysql-8.0.26/bin/mysql -p${password} -u${username} -S /data/mysqldata/${array}/socket/mysql.sock --connect-timeout=3 -A -e 'select 1;'`
+  if [ -n "${CMD}" ]; then
+    break
+  fi
+  nohup /bin/sh /data/app/mysql-8.0.26/bin/mysqld_safe --defaults-file=${conf} --user=mysql --datadir=/data/mysqldata/${array}/dbdata > /data/mysqldata/${array}/logfile/out.log 2>&1 &
+  let args-=1
+  sleep 20s
+done
+
 rm -rf /data/mysqldata/clonebackup
