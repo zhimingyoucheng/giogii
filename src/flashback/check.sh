@@ -13,9 +13,11 @@ echo ${mysqld_safe}
 echo "shutdown oldData node finish"
 sleep 2s
 rm -rf /data/mysqldata/${array}/dbdata_bak
+echo "delete dbdata_bak finish"
 mv /data/mysqldata/${array}/dbdata /data/mysqldata/${array}/dbdata_bak
+echo "mv dbdata to dbdata_bak finish"
 mv /data/mysqldata/clonebackup/dbdata /data/mysqldata/${array}/
-
+echo "cp clone files finish"
 nohup /bin/sh /data/app/mysql-8.0.26/bin/mysqld_safe --defaults-file=${conf} --user=mysql --datadir=/data/mysqldata/${array}/dbdata > /data/mysqldata/${array}/logfile/out.log 2>&1 &
 
 sleep 10s
