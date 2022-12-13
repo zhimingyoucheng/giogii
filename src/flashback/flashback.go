@@ -157,6 +157,7 @@ func DisableDataServer() {
 	var strSql string
 	strSql = fmt.Sprintf("dbscale disable dataserver %s", ServerName)
 	SlaveSqlMapper.DoQueryWithoutRes(strSql)
+	log.Println("剔除孤岛节点: ", ServerName)
 }
 func EnableDataServer() {
 	var strSql string
@@ -207,8 +208,7 @@ func DoStartFlashback(targetUserInfo string, targetSocket string, sshUser string
 	for {
 		GetSlaveGTIDSet()
 		if SlaveStatus.SecondsBehindMaster.Int64 == 0 {
-			fmt.Println(SlaveStatus.ExecutedGtidSet)
-			log.Println("保留GTID")
+			log.Println("记录gtid，确保灾备集群全部回放完Binlog: ", SlaveStatus.ExecutedGtidSet)
 			break
 		}
 		time.Sleep(3 * time.Second)
