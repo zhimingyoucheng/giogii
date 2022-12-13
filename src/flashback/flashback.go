@@ -55,8 +55,8 @@ func InitTmpConnection(sourceUserInfo string, sourceSocket string) (s mapper.Sql
 	return
 }
 
-func InitSlaveConnection(sourceUserInfo string, sourceSocket string) {
-	s := mapper.InitSourceConn(sourceUserInfo, sourceSocket, "information_schema")
+func InitSlaveConnection(targetUserInfo string, targetSocket string) {
+	s := mapper.InitSourceConn(targetUserInfo, targetSocket, "information_schema")
 	SlaveSqlMapper = &s
 }
 
