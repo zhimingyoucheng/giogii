@@ -1,23 +1,17 @@
 #!/bin/bash
 username=$1
 password=$2
-socket=`find /data/mysqldata/clonebackup/ -name mysql.sock`
 string=`ls /data/mysqldata/`
 array=(${string// /})
 conf=`find /data/mysqldata/16*/ -name *.conf`
 /data/app/mysql-8.0.26/bin/mysql -u${username} -p${password} -S /data/mysqldata/clonebackup/socket/mysql.sock -e "shutdown;"
-echo "shutdown clone node finish"
 sleep 2s
-echo ${mysqld_safe}
 /data/app/mysql-8.0.26/bin/mysql -u${username} -p${password} -S /data/mysqldata/${array}/socket/mysql.sock -e "shutdown;"
-echo "shutdown oldData node finish"
-sleep 2s
+sleep 3s
 rm -rf /data/mysqldata/${array}/dbdata_bak
-echo "delete dbdata_bak finish"
 mv /data/mysqldata/${array}/dbdata /data/mysqldata/${array}/dbdata_bak
-echo "mv dbdata to dbdata_bak finish"
 mv /data/mysqldata/clonebackup/dbdata /data/mysqldata/${array}/
-echo "cp clone files finish"
+
 nohup /bin/sh /data/app/mysql-8.0.26/bin/mysqld_safe --defaults-file=${conf} --user=mysql --datadir=/data/mysqldata/${array}/dbdata > /data/mysqldata/${array}/logfile/out.log 2>&1 &
 
 sleep 10s
