@@ -208,7 +208,7 @@ func DoStartFlashback(targetUserInfo string, targetSocket string, sshUser string
 	for {
 		GetSlaveGTIDSet()
 		if SlaveStatus.SecondsBehindMaster.Int64 == 0 {
-			log.Println("记录gtid，确保灾备集群全部回放完Binlog: ", SlaveStatus.ExecutedGtidSet)
+			log.Println(fmt.Sprintf("记录gtid [ %s ]", SlaveStatus.ExecutedGtidSet))
 			break
 		}
 		time.Sleep(3 * time.Second)
@@ -224,6 +224,9 @@ func DoStartFlashback(targetUserInfo string, targetSocket string, sshUser string
 	log.Println("准备备集群关闭只读功能")
 	CloseReadOnly()
 	log.Println("备集群关闭只读功能完成")
+	log.Println("********************************************************************************************")
+	log.Println("*********************************备集群可以进行业务写入操作*********************************")
+	log.Println("********************************************************************************************")
 
 	initSshConnection(s, j, p, sshUser, sshPass)
 	primary, _ := primaryClient.Connect()
@@ -241,7 +244,7 @@ func DoStartFlashback(targetUserInfo string, targetSocket string, sshUser string
 	var scriptPath = getCurrentAbPath()
 	wg.Add(1)
 	go func(client *ssh.Client) {
-		log.Println("准备孤岛节点上传clone脚本")
+		log.Println(fmt.Sprintf("准备孤岛节点:%s上传clone脚本", s))
 		primaryClient.UploadFile(scriptPath+"/installClonePlugin.sh", "/home/mysql/installClonePlugin.sh", client)
 		result, _ := primaryClient.Run("chmod 755 *")
 		log.Println(result)
@@ -251,25 +254,25 @@ func DoStartFlashback(targetUserInfo string, targetSocket string, sshUser string
 
 	wg.Add(1)
 	go func(client *ssh.Client) {
-		log.Println("准备第一个节点上传initInstance/clone/check脚本")
+		log.Println(fmt.Sprintf("准备在%s节点上传initInstance/clone/check脚本", j))
 		secondaryClient.UploadFile(scriptPath+"/initInstance.sh", "/home/mysql/initInstance.sh", client)
 		secondaryClient.UploadFile(scriptPath+"/clone.sh", "/home/mysql/clone.sh", client)
 		secondaryClient.UploadFile(scriptPath+"/check.sh", "/home/mysql/check.sh", client)
 		result, _ := secondaryClient.Run("chmod 755 *")
 		log.Println(result)
-		log.Println("第一个节点上传initInstance/clone/check脚本完成")
+		log.Println(fmt.Sprintf("%s节点上传initInstance/clone/check脚本完成", j))
 		wg.Done()
 	}(secondaryClient.client)
 
 	wg.Add(1)
 	go func(client *ssh.Client) {
-		log.Println("准备第二个节点上传initInstance/clone/check脚本")
+		log.Println(fmt.Sprintf("准备在%s节点上传initInstance/clone/check脚本", p))
 		joinerClient.UploadFile(scriptPath+"/initInstance.sh", "/home/mysql/initInstance.sh", client)
 		joinerClient.UploadFile(scriptPath+"/clone.sh", "/home/mysql/clone.sh", client)
 		joinerClient.UploadFile(scriptPath+"/check.sh", "/home/mysql/check.sh", client)
 		result, _ := joinerClient.Run("chmod 755 *")
 		log.Println(result)
-		log.Println("第二个节点上传initInstance/clone/check脚本完成")
+		log.Println(fmt.Sprintf("%s节点上传initInstance/clone/check脚本完成", p))
 		wg.Done()
 	}(joinerClient.client)
 	wg.Wait()
