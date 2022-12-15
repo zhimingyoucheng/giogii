@@ -29,10 +29,10 @@ func TestM(t *testing.T) {
 	flag.StringVar(&sourceUserInfo, "s", "admin:!QAZ2wsx", "")
 	flag.StringVar(&sourceSocket, "si", "172.17.139.26:16310", "")
 	flag.StringVar(&targetUserInfo, "t", "admin:!QAZ2wsx", "")
-	flag.StringVar(&targetSocket, "ti", "172.17.139.26:16310", "")
+	flag.StringVar(&targetSocket, "ti", "172.17.139.26:16320", "")
 	flag.StringVar(&parameter, "c", "", "")
 	flag.StringVar(&bigTrx, "m", "", "")
-	flag.StringVar(&ssh, "f", "end", "")
+	flag.StringVar(&ssh, "f", "start", "")
 	flag.StringVar(&sshUser, "u", "mysql", "")
 	flag.StringVar(&sshPass, "p", "mysql", "")
 

@@ -185,4 +185,7 @@ func DoEndFlashbackByDbScaleTools(sourceUserInfo string, sourceSocket string, ta
 	wg.Wait()
 
 	// 2.6 重新构建主集群和备集群的复制关系
+	socket := strings.Split(targetSocket, ":")
+	fields := strings.Split(targetUserInfo, ":")
+	AddBackupCluster(sourceUserInfo, socket[0], socket[1], fields[0], fields[1])
 }
