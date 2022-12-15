@@ -332,7 +332,7 @@ func DoStartFlashback(targetUserInfo string, targetSocket string, sshUser string
 
 }
 
-func DoEndFlashback(sourceUserInfo string, targetUserInfo string, targetSocket string, sshUser string, sshPass string) {
+func DoStopFlashback(sourceUserInfo string, targetUserInfo string, targetSocket string, sshUser string, sshPass string) {
 
 	p, s, j := GetSshIp()
 
