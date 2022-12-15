@@ -49,3 +49,13 @@ func (sqlScaleStruct *SqlStruct) doPrepareQuery(sqlStr string, args string) *sql
 	}
 	return rows
 }
+
+func (sqlScaleStruct *SqlStruct) doPrepareInsert(sqlStr string, id int64, args string, args2 string) sql.Result {
+	connection := sqlScaleStruct.Connection
+	stmt, _ := connection.Prepare(sqlStr)
+	result, err := stmt.Exec(id, args, args2)
+	if err != nil {
+		log.Println(fmt.Sprintf("This is a bad connection. SQL info: %s;%s", sqlStr, err))
+	}
+	return result
+}

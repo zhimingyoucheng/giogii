@@ -29,7 +29,7 @@ func TestM(t *testing.T) {
 	flag.StringVar(&sourceUserInfo, "s", "admin:!QAZ2wsx", "")
 	flag.StringVar(&sourceSocket, "si", "172.17.139.26:16310", "")
 	flag.StringVar(&targetUserInfo, "t", "admin:!QAZ2wsx", "")
-	flag.StringVar(&targetSocket, "ti", "172.17.128.151:16310", "")
+	flag.StringVar(&targetSocket, "ti", "172.17.139.26:16310", "")
 	flag.StringVar(&parameter, "c", "", "")
 	flag.StringVar(&bigTrx, "m", "", "")
 	flag.StringVar(&ssh, "f", "end", "")
@@ -51,7 +51,11 @@ func TestM(t *testing.T) {
 	} else if strings.Trim(ssh, " ") == "stop" {
 		flashback.InitMasterConnection(sourceUserInfo, sourceSocket)
 		flashback.InitSlaveConnection(targetUserInfo, targetSocket)
-		flashback.DoEndFlashback(sourceUserInfo, targetUserInfo, targetSocket, sshUser, sshPass)
+		flashback.DoStopFlashback(sourceUserInfo, targetUserInfo, targetSocket, sshUser, sshPass)
+	} else if strings.Trim(ssh, " ") == "begin" {
+		flashback.DoBeginFlashbackByDbScaleTools(sourceUserInfo, sourceSocket, targetUserInfo, targetSocket)
+	} else if strings.Trim(ssh, " ") == "end" {
+		flashback.DoEndFlashbackByDbScaleTools(sourceUserInfo, sourceSocket, targetUserInfo, targetSocket, sshUser, sshPass)
 	} else {
 		check.InitCheckConsistentConf(sourceUserInfo, sourceSocket, "information_schema", targetUserInfo, targetSocket, "information_schema")
 		check.DoCheck()

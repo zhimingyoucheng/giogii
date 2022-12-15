@@ -44,7 +44,7 @@ func main() {
 	} else if strings.Trim(ssh, " ") == "stop" {
 		flashback.InitMasterConnection(sourceUserInfo, sourceSocket)
 		flashback.InitSlaveConnection(targetUserInfo, targetSocket)
-		flashback.DoEndFlashback(sourceUserInfo, targetUserInfo, targetSocket, sshUser, sshPass)
+		flashback.DoStopFlashback(sourceUserInfo, targetUserInfo, targetSocket, sshUser, sshPass)
 	} else {
 		check.InitCheckConsistentConf(sourceUserInfo, sourceSocket, "information_schema", targetUserInfo, targetSocket, "information_schema")
 		check.DoCheck()
