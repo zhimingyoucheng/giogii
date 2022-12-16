@@ -20,12 +20,20 @@
 ./giogii -s 'admin:!QAZ2wsx' -si '172.17.139.26:16310' -m m
 ```
 
-4）灾备集群flashback使用方法, -u ssh用户名称, -p ssh用户密码, -f 闪回动作启停, start执行闪回动作准备阶段, stop执行闪回动作后续流程,
+4）灾备集群flashback使用方法,该方法使用的是clone slave节点, -u ssh用户名称, -p ssh用户密码, -f 闪回动作启停, start执行闪回动作准备阶段, stop执行闪回动作后续流程,
 执行start和stop直接的时间业务是可以对灾备集群进行写入操作. -s 主集群信息, -si 主集群连接信息, -t 灾备集群信息, -ti 灾备集群连接信息
 
 ```shell
 ./giogii -t 'admin:!QAZ2wsx' -ti '172.17.139.26:16310' -s 'admin:!QAZ2wsx' -si '172.17.139.26:16320'  -u mysql -p mysql -f start
 ./giogii -t 'admin:!QAZ2wsx' -ti '172.17.139.26:16310' -s 'admin:!QAZ2wsx' -si '172.17.139.26:16320'  -u mysql -p mysql -f stop
+```
+
+5）灾备集群flashback使用方法,该方法使用的是proxy flashback工具执行, -u ssh用户名称, -p ssh用户密码, -f 闪回动作启停, begin执行闪回动作准备阶段, end执行闪回动作后续流程,
+执行begin和end直接的时间业务是可以对灾备集群进行写入操作. -s 主集群信息, -si 主集群连接信息, -t 灾备集群信息, -ti 灾备集群连接信息
+
+```shell
+./giogii -t 'admin:!QAZ2wsx' -ti '172.17.139.26:16310' -s 'admin:!QAZ2wsx' -si '172.17.139.26:16320'  -u mysql -p mysql -f begin
+./giogii -t 'admin:!QAZ2wsx' -ti '172.17.139.26:16310' -s 'admin:!QAZ2wsx' -si '172.17.139.26:16320'  -u mysql -p mysql -f end
 ```
 
 ## 编译
