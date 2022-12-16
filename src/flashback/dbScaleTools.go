@@ -3,8 +3,8 @@ package flashback
 import (
 	"fmt"
 	"giogii/src/entity"
-	"golang.org/x/crypto/ssh"
 	"log"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -80,17 +80,11 @@ func DoEndFlashbackByDbScaleTools(sourceUserInfo string, sourceSocket string, ta
 	}()
 	// 2.1 打开备集群只读参数，变为read only
 	EnableReadOnly()
+
 	// 2.2 记录备集群主节点GTID和POS位点信息，
 	masterStatus := GetPosAndSet()
-	log.Println(": ", masterStatus.File)
-	log.Println(": ", *masterStatus.Position)
-	log.Println(": ", masterStatus.ExecutedGtidSet)
 
-	// 2.3 获取监控线程记录的拓扑关系，判断是否有主从切换，
-	//TODO
-
-	// 2.4 根据binlog位点信息、GTID信息调用dbscale_binlog_tool执行闪回动作
-
+	// 2.3 根据binlog位点信息、GTID信息调用dbscale_binlog_tool执行闪回动作
 	var primaryPort string
 	var secondaryPort string
 	var joinerPort string
@@ -115,17 +109,7 @@ func DoEndFlashbackByDbScaleTools(sourceUserInfo string, sourceSocket string, ta
 	var resSet string
 	strSql = fmt.Sprint("select val from dbscale_tmp.gtid where id = 1")
 	valueSet := SlaveSqlMapper.DoQueryParseSingleValue(strSql)
-
-	strSql = fmt.Sprint("select @@server_uuid")
-	serverUuid := SlaveSqlMapper.DoQueryParseSingleValue(strSql)
-
-	val := strings.Split(valueSet, ",")
-
-	for i := 0; i < len(val); i++ {
-		if strings.Contains(val[i], serverUuid) {
-			resSet = val[i]
-		}
-	}
+	resSet = strings.ReplaceAll(valueSet, "\n", "")
 
 	initSshConnection(primaryHost, secondaryHost, joinerHost, sshUser, sshPass)
 	primary, _ := primaryClient.Connect()
@@ -139,13 +123,13 @@ func DoEndFlashbackByDbScaleTools(sourceUserInfo string, sourceSocket string, ta
 
 	var result string
 	wg.Add(1)
-	go func(client *ssh.Client) {
+	go func() {
 		scriptStr := fmt.Sprintf("string=`ls /data/mysqldata/` && array=(${string// /}) && echo ${array}")
 		result, _ = primaryClient.Run(scriptStr)
 		result = strings.TrimSpace(result)
 		log.Println(result)
 		wg.Done()
-	}(primaryClient.client)
+	}()
 	wg.Wait()
 
 	args := strings.Split(targetUserInfo, ":")
@@ -157,9 +141,14 @@ func DoEndFlashbackByDbScaleTools(sourceUserInfo string, sourceSocket string, ta
 			"--remote-user=%s --remote-password='%s' --remote-host=127.0.0.1 --remote-port=%s "+
 			"--gtid-set=\"%s\" "+
 			"-v  "+
-			"--end-position=%s --end-file=/data/mysqldata/%s/dbdata/%s > /tmp/flashback.log 2>&1", args[0], args[1], primaryPort, args[0], args[1], primaryPort, resSet, strconv.Itoa(*masterStatus.Position), result, masterStatus.File)
+			"--end-position=%s --end-file=/data/mysqldata/%s/dbdata/%s", args[0], args[1], primaryPort, args[0], args[1], primaryPort, resSet, strconv.Itoa(*masterStatus.Position), result, masterStatus.File)
+		log.Println(str)
 		res, _ := primaryClient.Run(str)
-		log.Println(res)
+		if res == "" {
+			log.Println("闪回程序dbscale_binlog_tool出错")
+			os.Exit(-1)
+		}
+
 		strCmd := fmt.Sprintf("/data/app/mysql-8.0.26/bin/mysql -u%s -p'%s' -h127.0.0.1 -P%s -e \"stop slave;reset master;reset slave;set global gtid_purged='%s';\"", args[0], args[1], primaryPort, resSet)
 		res, _ = primaryClient.Run(strCmd)
 		log.Println(res)
