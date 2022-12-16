@@ -177,4 +177,13 @@ func DoEndFlashbackByDbScaleTools(sourceUserInfo string, sourceSocket string, ta
 	socket := strings.Split(targetSocket, ":")
 	fields := strings.Split(targetUserInfo, ":")
 	AddBackupCluster(sourceUserInfo, socket[0], socket[1], fields[0], fields[1])
+
+	wg.Add(1)
+	go func() {
+		strCmd := fmt.Sprintf("/data/app/mysql-8.0.26/bin/mysql -u%s -p'%s' -h127.0.0.1 -P%s -e \"start slave;\"", args[0], args[1], primaryPort)
+		res, _ := primaryClient.Run(strCmd)
+		log.Println(res)
+		wg.Done()
+	}()
+	wg.Wait()
 }

@@ -45,6 +45,10 @@ func main() {
 		flashback.InitMasterConnection(sourceUserInfo, sourceSocket)
 		flashback.InitSlaveConnection(targetUserInfo, targetSocket)
 		flashback.DoStopFlashback(sourceUserInfo, targetUserInfo, targetSocket, sshUser, sshPass)
+	} else if strings.Trim(ssh, " ") == "begin" {
+		flashback.DoBeginFlashbackByDbScaleTools(sourceUserInfo, sourceSocket, targetUserInfo, targetSocket)
+	} else if strings.Trim(ssh, " ") == "end" {
+		flashback.DoEndFlashbackByDbScaleTools(sourceUserInfo, sourceSocket, targetUserInfo, targetSocket, sshUser, sshPass)
 	} else {
 		check.InitCheckConsistentConf(sourceUserInfo, sourceSocket, "information_schema", targetUserInfo, targetSocket, "information_schema")
 		check.DoCheck()
