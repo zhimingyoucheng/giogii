@@ -25,7 +25,7 @@ func SaveInfo(gtid string) {
 	SlaveSqlMapper.DoInsertValues(strSql, 1, gtid, gtid)
 }
 
-func DoBeginFlashbackByDbScaleTools(sourceUserInfo string, sourceSocket string, targetUserInfo string, targetSocket string) {
+func DoBeginFlashback(sourceUserInfo string, sourceSocket string, targetUserInfo string, targetSocket string) {
 	InitMasterConnection(sourceUserInfo, sourceSocket)
 	InitSlaveConnection(targetUserInfo, targetSocket)
 
@@ -65,12 +65,7 @@ func DoBeginFlashbackByDbScaleTools(sourceUserInfo string, sourceSocket string, 
 
 }
 
-func Monitor() {
-	// 1.5 监控线程监控备集群在回放期间的拓扑关系，每5秒一次，如果拓扑发生变化则记录一次GTID和POS位点
-
-}
-
-func DoEndFlashbackByDbScaleTools(sourceUserInfo string, sourceSocket string, targetUserInfo string, targetSocket string, sshUser string, sshPass string) {
+func DoEndFlashback(sourceUserInfo string, sourceSocket string, targetUserInfo string, targetSocket string, sshUser string, sshPass string) {
 	InitMasterConnection(sourceUserInfo, sourceSocket)
 	InitSlaveConnection(targetUserInfo, targetSocket)
 
@@ -106,11 +101,13 @@ func DoEndFlashbackByDbScaleTools(sourceUserInfo string, sourceSocket string, ta
 		}
 	}
 
+	// 从dbscale_tmp.gtid获取gtid信息
 	var resSet string
 	strSql = fmt.Sprint("select val from dbscale_tmp.gtid where id = 1")
 	valueSet := SlaveSqlMapper.DoQueryParseSingleValue(strSql)
 	resSet = strings.ReplaceAll(valueSet, "\n", "")
 
+	// 初始化ssh连接
 	initSshConnection(primaryHost, secondaryHost, joinerHost, sshUser, sshPass)
 	primary, _ := primaryClient.Connect()
 	secondary, _ := secondaryClient.Connect()
@@ -121,17 +118,18 @@ func DoEndFlashbackByDbScaleTools(sourceUserInfo string, sourceSocket string, ta
 		joiner.client.Close()
 	}()
 
+	// 获取mysql路径
 	var result string
 	wg.Add(1)
 	go func() {
 		scriptStr := fmt.Sprintf("string=`ls /data/mysqldata/` && array=(${string// /}) && echo ${array}")
 		result, _ = primaryClient.Run(scriptStr)
 		result = strings.TrimSpace(result)
-		log.Println(result)
 		wg.Done()
 	}()
 	wg.Wait()
 
+	// 格式化灾备集群用户名和密码信息
 	args := strings.Split(targetUserInfo, ":")
 
 	wg.Add(1)
