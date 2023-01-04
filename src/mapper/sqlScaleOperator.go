@@ -1,7 +1,6 @@
 package mapper
 
 import (
-	"fmt"
 	"giogii/src/entity"
 	_ "github.com/go-sql-driver/mysql"
 	"log"
@@ -23,7 +22,7 @@ type SqlScaleOperator interface {
 	DoQueryParseToDataServers(sqlStr string) (d []entity.DataServers)
 	DoQueryWithoutRes(sqlStr string)
 	DoQueryParseToClusterInfo(sqlStr string) (c []entity.ClusterInfo)
-	DoInsertValues(sqlStr string, id int64, args string, args2 string)
+	DoInsertValues(sqlStr string, id int64, args string, args2 string) (count int64)
 }
 
 func (sqlScaleStruct *SqlStruct) DoClose() {
@@ -193,15 +192,11 @@ func (sqlScaleStruct *SqlStruct) DoQueryParseToClusterInfo(sqlStr string) (c []e
 	return
 }
 
-func (sqlScaleStruct *SqlStruct) DoInsertValues(sqlStr string, id int64, args string, args2 string) {
+func (sqlScaleStruct *SqlStruct) DoInsertValues(sqlStr string, id int64, args string, args2 string) (count int64) {
 	result := sqlScaleStruct.doPrepareInsert(sqlStr, id, args, args2)
 	count, err := result.RowsAffected()
 	if err != nil {
 		log.Println("获取结果失败", err)
 	}
-	if count > 0 {
-		log.Println(fmt.Sprintf("新增%s成功", args))
-	} else {
-		log.Println(fmt.Sprintf("新增%s失败", args))
-	}
+	return count
 }

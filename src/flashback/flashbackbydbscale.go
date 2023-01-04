@@ -17,12 +17,13 @@ func GetPosAndSet() (masterStatus entity.MasterStatus) {
 	return
 }
 
-func SaveInfo(gtid string) {
+func SaveInfo(gtid string) int64 {
 	var strSql string
 	strSql = fmt.Sprint("create table dbscale_tmp.gtid (id int primary key auto_increment, val varchar(1024))")
 	SlaveSqlMapper.DoQueryWithoutRes(strSql)
 	strSql = fmt.Sprint("insert into dbscale_tmp.gtid (id,val) values (?,?) on duplicate key update val=?")
-	SlaveSqlMapper.DoInsertValues(strSql, 1, gtid, gtid)
+	count := SlaveSqlMapper.DoInsertValues(strSql, 1, gtid, gtid)
+	return count
 }
 
 func DoBeginFlashback(sourceUserInfo string, sourceSocket string, targetUserInfo string, targetSocket string) {
@@ -44,8 +45,9 @@ func DoBeginFlashback(sourceUserInfo string, sourceSocket string, targetUserInfo
 	*/
 	for {
 		GetSlaveGTIDSet()
+		log.Println("等待灾备集群回放Binlog")
 		if SlaveStatus.SecondsBehindMaster.Int64 == 0 {
-			log.Println("记录gtid，确保灾备集群全部回放完Binlog: ", SlaveStatus.ExecutedGtidSet)
+			log.Println("灾备集群回放Binlog完成", SlaveStatus.ExecutedGtidSet)
 			break
 		}
 		time.Sleep(3 * time.Second)
@@ -61,7 +63,12 @@ func DoBeginFlashback(sourceUserInfo string, sourceSocket string, targetUserInfo
 	CloseReadOnly()
 
 	// 1.5 保留gtid到数据库里
-	SaveInfo(masterStatus.ExecutedGtidSet)
+	count := SaveInfo(masterStatus.ExecutedGtidSet)
+	// TODO
+	if !(count > 0) {
+		EnableReadOnly()
+		log.Println(": ", masterStatus.File)
+	}
 
 }
 
