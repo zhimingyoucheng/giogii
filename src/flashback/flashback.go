@@ -141,9 +141,9 @@ func CloseReplication() {
 	var strSql string
 	strSql = fmt.Sprint("stop slave")
 	SlaveSqlMapper.DoQueryWithoutRes(strSql)
-	strSql = fmt.Sprint("dbscale set global 'enable-slave-dbscale-server'=0")
-	SlaveSqlMapper.DoQueryWithoutRes(strSql)
 	strSql = fmt.Sprint("dbscale set global 'slave-dbscale-mode'=0")
+	SlaveSqlMapper.DoQueryWithoutRes(strSql)
+	strSql = fmt.Sprint("dbscale set global 'enable-slave-dbscale-server'=0")
 	SlaveSqlMapper.DoQueryWithoutRes(strSql)
 }
 

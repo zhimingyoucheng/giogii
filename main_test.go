@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"giogii/src/check"
 	"giogii/src/flashback"
 	"giogii/src/lock"
@@ -16,9 +17,10 @@ func TestM(t *testing.T) {
 	var targetSocket string
 	var parameter string
 	var bigTrx string
-	var ssh string
+	var fb string
 	var sshUser string
 	var sshPass string
+	var call string
 
 	/*flag.StringVar(&sourceUserInfo, "s", "root:drACgwoqtM", "")
 	flag.StringVar(&sourceSocket, "si", "172.17.128.49:13336", "")
@@ -32,9 +34,10 @@ func TestM(t *testing.T) {
 	flag.StringVar(&targetSocket, "ti", "172.17.139.26:16320", "")
 	flag.StringVar(&parameter, "c", "", "")
 	flag.StringVar(&bigTrx, "m", "", "")
-	flag.StringVar(&ssh, "f", "end", "")
+	flag.StringVar(&fb, "f", "", "")
 	flag.StringVar(&sshUser, "u", "mysql", "")
 	flag.StringVar(&sshPass, "p", "mysql", "")
+	flag.StringVar(&call, "C", "C", "")
 
 	flag.Parse()
 
@@ -44,20 +47,28 @@ func TestM(t *testing.T) {
 	} else if strings.Trim(bigTrx, " ") == "m" {
 		lock.InitConf(sourceUserInfo, sourceSocket, "performance_schema")
 		lock.DoMonitorLock()
-	} else if strings.Trim(ssh, " ") == "start" {
+	} else if strings.Trim(fb, " ") == "start" {
 		flashback.InitMasterConnection(sourceUserInfo, sourceSocket)
 		flashback.InitSlaveConnection(targetUserInfo, targetSocket)
 		flashback.DoStartFlashback(targetUserInfo, targetSocket, sshUser, sshPass)
-	} else if strings.Trim(ssh, " ") == "stop" {
+	} else if strings.Trim(fb, " ") == "stop" {
 		flashback.InitMasterConnection(sourceUserInfo, sourceSocket)
 		flashback.InitSlaveConnection(targetUserInfo, targetSocket)
 		flashback.DoStopFlashback(sourceUserInfo, targetUserInfo, targetSocket, sshUser, sshPass)
-	} else if strings.Trim(ssh, " ") == "begin" {
-		flashback.DoBeginFlashback(sourceUserInfo, sourceSocket, targetUserInfo, targetSocket)
-	} else if strings.Trim(ssh, " ") == "end" {
-		flashback.DoEndFlashback(sourceUserInfo, sourceSocket, targetUserInfo, targetSocket, sshUser, sshPass)
+	} else if strings.Trim(fb, " ") == "begin" {
+		sInfo, tInfo, _ := ReadConfig()
+		flashback.DoBeginFlashback(sInfo, sourceSocket, tInfo, targetSocket)
+	} else if strings.Trim(fb, " ") == "end" {
+		sInfo, tInfo, sshInfo := ReadConfig()
+		sshUser = strings.Split(sshInfo, ":")[0]
+		sshPass = strings.Split(sshInfo, ":")[1]
+		flashback.DoEndFlashback(sInfo, sourceSocket, tInfo, targetSocket, sshUser, sshPass)
+	} else if strings.Trim(call, " ") == "C" {
+		sInfo, tInfo, sshInfo := ReadConfig()
+		fmt.Println(sInfo, tInfo, sshInfo)
 	} else {
 		check.InitCheckConsistentConf(sourceUserInfo, sourceSocket, "information_schema", targetUserInfo, targetSocket, "information_schema")
 		check.DoCheck()
 	}
+
 }

@@ -147,7 +147,6 @@ func DoEndFlashback(sourceUserInfo string, sourceSocket string, targetUserInfo s
 			"--gtid-set=\"%s\" "+
 			"-v  "+
 			"--end-position=%s --end-file=/data/mysqldata/%s/dbdata/%s", args[0], args[1], primaryPort, args[0], args[1], primaryPort, resSet, strconv.Itoa(*masterStatus.Position), result, masterStatus.File)
-		log.Println(str)
 		res, _ := primaryClient.Run(str)
 		if res == "" {
 			log.Println("闪回程序dbscale_binlog_tool出错")
@@ -183,12 +182,13 @@ func DoEndFlashback(sourceUserInfo string, sourceSocket string, targetUserInfo s
 	fields := strings.Split(targetUserInfo, ":")
 	AddBackupCluster(sourceUserInfo, socket[0], socket[1], fields[0], fields[1])
 
-	wg.Add(1)
-	go func() {
-		strCmd := fmt.Sprintf("/data/app/mysql-8.0.26/bin/mysql -u%s -p'%s' -h127.0.0.1 -P%s -e \"start slave;\"", args[0], args[1], primaryPort)
-		res, _ := primaryClient.Run(strCmd)
-		log.Println(res)
-		wg.Done()
-	}()
-	wg.Wait()
+	//wg.Add(1)
+	//go func() {
+	//	strCmd := fmt.Sprintf("/data/app/mysql-8.0.26/bin/mysql -u%s -p'%s' -h127.0.0.1 -P%s -e \"start slave;\"", args[0], args[1], primaryPort)
+	//	res, _ := primaryClient.Run(strCmd)
+	//	log.Println(res)
+	//	wg.Done()
+	//}()
+	//wg.Wait()
+	StartSlave()
 }
