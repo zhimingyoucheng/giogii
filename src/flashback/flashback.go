@@ -187,7 +187,9 @@ var (
 	wg sync.WaitGroup
 )
 
-func DoStartFlashback(targetUserInfo string, targetSocket string, sshUser string, sshPass string) {
+func DoStartFlashback(sourceUserInfo string, sourceSocket string, targetUserInfo string, targetSocket string, sshUser string, sshPass string) {
+	InitMasterConnection(sourceUserInfo, sourceSocket)
+	InitSlaveConnection(targetUserInfo, targetSocket)
 	defer func() {
 		SlaveSqlMapper.DoClose()
 		MasterSqlMapper.DoClose()
@@ -332,7 +334,14 @@ func DoStartFlashback(targetUserInfo string, targetSocket string, sshUser string
 
 }
 
-func DoStopFlashback(sourceUserInfo string, targetUserInfo string, targetSocket string, sshUser string, sshPass string) {
+func DoStopFlashback(sourceUserInfo string, sourceSocket string, targetUserInfo string, targetSocket string, sshUser string, sshPass string) {
+
+	InitMasterConnection(sourceUserInfo, sourceSocket)
+	InitSlaveConnection(targetUserInfo, targetSocket)
+	defer func() {
+		SlaveSqlMapper.DoClose()
+		MasterSqlMapper.DoClose()
+	}()
 
 	p, s, j := GetSshIp()
 
@@ -408,11 +417,6 @@ func DoStopFlashback(sourceUserInfo string, targetUserInfo string, targetSocket 
 		wg.Done()
 	}()
 	wg.Wait()
-
-	defer func() {
-		SlaveSqlMapper.DoClose()
-		MasterSqlMapper.DoClose()
-	}()
 
 }
 

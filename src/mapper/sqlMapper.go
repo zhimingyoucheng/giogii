@@ -27,14 +27,23 @@ func InitAllConn(sourceUserInfo string, sourceSocket string, sourceDatabase stri
 }
 
 func InitSourceConn(sourceUserInfo string, sourceSocket string, sourceDatabase string) (s SqlStruct) {
-
 	s = SqlStruct{
 		MaxIdleConn:  1,
 		DriverName:   "mysql",
 		ConnIdleTime: time.Minute * 1,
 		ConnInfo:     fmt.Sprintf("%s@tcp(%s)/%s", sourceUserInfo, sourceSocket, sourceDatabase),
 	}
+	s.InitConnection()
+	return
+}
 
+func CreateConn(userInfo string, socket string, database string) (s SqlStruct) {
+	s = SqlStruct{
+		MaxIdleConn:  1,
+		DriverName:   "mysql",
+		ConnIdleTime: time.Minute * 1,
+		ConnInfo:     fmt.Sprintf("%s@tcp(%s)/%s", userInfo, socket, database),
+	}
 	s.InitConnection()
 	return
 }

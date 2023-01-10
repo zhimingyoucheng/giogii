@@ -5,9 +5,9 @@ import (
 	"flag"
 	"fmt"
 	"giogii/src/check"
+	"giogii/src/entity"
 	"giogii/src/flashback"
 	"giogii/src/lock"
-	"io"
 	"log"
 	"os"
 	"strings"
@@ -18,87 +18,105 @@ func main() {
 	var sourceSocket string
 	var targetUserInfo string
 	var targetSocket string
-	var parameter string
-	var bigTrx string
+	var compare string
+	var locks string
 	var fb string
 	var sshUser string
 	var sshPass string
-	var call string
 
 	flag.StringVar(&sourceUserInfo, "s", "", "")
 	flag.StringVar(&sourceSocket, "si", "", "")
 	flag.StringVar(&targetUserInfo, "t", "", "")
 	flag.StringVar(&targetSocket, "ti", "", "")
-	flag.StringVar(&parameter, "c", "", "")
-	flag.StringVar(&bigTrx, "m", "", "")
+	flag.StringVar(&compare, "c", "", "")
+	flag.StringVar(&locks, "m", "", "")
 	flag.StringVar(&fb, "f", "", "")
 	flag.StringVar(&sshUser, "u", "", "")
 	flag.StringVar(&sshPass, "p", "", "")
-	flag.StringVar(&call, "C", "", "")
 
 	flag.Parse()
 
-	if strings.Trim(parameter, " ") == "c" {
+	if strings.Trim(compare, " ") == "c" {
+		if sourceUserInfo == "" || sourceSocket == "" || targetUserInfo == "" || targetSocket == "" {
+			log.Println("parameter error")
+			os.Exit(-1)
+		}
 		check.InitCheckParameterConf(sourceUserInfo, sourceSocket, "greatrds", targetUserInfo, targetSocket, "information_schema")
-		check.DoCheckParameter(parameter)
-	} else if strings.Trim(bigTrx, " ") == "m" {
+		check.DoCheckParameter(compare)
+	} else if strings.Trim(locks, " ") == "m" {
+		if sourceUserInfo == "" || sourceSocket == "" {
+			log.Println("parameter error")
+			os.Exit(-1)
+		}
 		lock.InitConf(sourceUserInfo, sourceSocket, "performance_schema")
 		lock.DoMonitorLock()
-	} else if strings.Trim(fb, " ") == "start" {
-		flashback.InitMasterConnection(sourceUserInfo, sourceSocket)
-		flashback.InitSlaveConnection(targetUserInfo, targetSocket)
-		flashback.DoStartFlashback(targetUserInfo, targetSocket, sshUser, sshPass)
-	} else if strings.Trim(fb, " ") == "stop" {
-		flashback.InitMasterConnection(sourceUserInfo, sourceSocket)
-		flashback.InitSlaveConnection(targetUserInfo, targetSocket)
-		flashback.DoStopFlashback(sourceUserInfo, targetUserInfo, targetSocket, sshUser, sshPass)
-	} else if strings.Trim(fb, " ") == "begin" {
-		sInfo, tInfo, _ := ReadConfig()
-		flashback.DoBeginFlashback(sInfo, sourceSocket, tInfo, targetSocket)
-	} else if strings.Trim(fb, " ") == "end" {
-		sInfo, tInfo, sshInfo := ReadConfig()
-		sshUser = strings.Split(sshInfo, ":")[0]
-		sshPass = strings.Split(sshInfo, ":")[1]
-		flashback.DoEndFlashback(sInfo, sourceSocket, tInfo, targetSocket, sshUser, sshPass)
-	} else if strings.Trim(call, " ") == "C" {
-		sInfo, tInfo, sshInfo := ReadConfig()
-		fmt.Println(sInfo, tInfo, sshInfo)
+	} else if strings.Trim(fb, " ") != "" {
+		expr := strings.Trim(fb, " ")
+		if sourceSocket == "" || targetSocket == "" {
+			log.Println("parameter error")
+			os.Exit(-1)
+		}
+		switch expr {
+		case "verify":
+			f := new(entity.FlashbackInfo)
+			f.SetSourceSocket(sourceSocket)
+			f.SetTargetSocket(targetSocket)
+			flashback.VerifyFlashbackEnv(*f)
+			// verify cluster consistent
+			_, err := flashback.VerifyClusterConsistent(*f)
+			if err == nil {
+				log.Println("cluster consistent check success!")
+			} else {
+				os.Exit(-1)
+			}
+		case "begin":
+			f := new(entity.FlashbackInfo)
+			f.SetSourceSocket(sourceSocket)
+			f.SetTargetSocket(targetSocket)
+			flashback.VerifyFlashbackEnv(*f)
+			// verify cluster consistent
+			_, err := flashback.VerifyClusterConsistent(*f)
+			if err == nil {
+				log.Println("cluster consistent check success!")
+			} else {
+				os.Exit(-1)
+			}
+			flashback.DoBeginFlashback(f.SourceUserInfo(), f.SourceSocket(), f.TargetUserInfo(), f.TargetSocket())
+		case "end":
+			f := new(entity.FlashbackInfo)
+			f.SetSourceSocket(sourceSocket)
+			f.SetTargetSocket(targetSocket)
+			flashback.VerifyFlashbackEnv(*f)
+			flashback.DoEndFlashback(f.SourceUserInfo(), f.SourceSocket(), f.TargetUserInfo(), f.TargetSocket(), f.SshUser(), f.SshPass())
+		case "start":
+			f := new(entity.FlashbackInfo)
+			f.SetSourceSocket(sourceSocket)
+			f.SetTargetSocket(targetSocket)
+			flashback.VerifyFlashbackEnv(*f)
+			// verify cluster consistent
+			_, err := flashback.VerifyClusterConsistent(*f)
+			if err == nil {
+				log.Println("cluster consistent check success!")
+			} else {
+				os.Exit(-1)
+			}
+			flashback.DoStartFlashback(f.SourceUserInfo(), f.SourceSocket(), f.TargetUserInfo(), f.TargetSocket(), f.SshUser(), f.SshPass())
+		case "stop":
+			f := new(entity.FlashbackInfo)
+			f.SetSourceSocket(sourceSocket)
+			f.SetTargetSocket(targetSocket)
+			flashback.VerifyFlashbackEnv(*f)
+			flashback.DoStopFlashback(f.SourceUserInfo(), f.SourceSocket(), f.TargetUserInfo(), f.TargetSocket(), f.SshUser(), f.SshPass())
+		}
 	} else {
+		if sourceUserInfo == "" || sourceSocket == "" || targetUserInfo == "" || targetSocket == "" {
+			log.Println("parameter error")
+			os.Exit(-1)
+		}
 		check.InitCheckConsistentConf(sourceUserInfo, sourceSocket, "information_schema", targetUserInfo, targetSocket, "information_schema")
 		check.DoCheck()
 	}
 
-}
-
-func ReadConfig() (sourceUserInfo string, targetUserInfo string, sshInfo string) {
-	path := "./gii.conf"
-	f, err := os.Open(path)
-	if err != nil {
-		log.Println("打开文件失败")
-		log.Fatal(err)
-		os.Exit(-1)
-	}
-	reader := bufio.NewReader(f)
-	for i := 0; i < 3; i++ {
-		readLine, _, err := reader.ReadLine()
-		if err != nil && err != io.EOF {
-			log.Fatal(err)
-		}
-		value := string(readLine)
-		if strings.Contains(value, "sourceUserInfo") {
-			sourceUserInfo = strings.Split(value, "=")[1]
-			continue
-		}
-		if strings.Contains(value, "targetUserInfo") {
-			targetUserInfo = strings.Split(value, "=")[1]
-			continue
-		}
-		if strings.Contains(value, "sshInfo") {
-			sshInfo = strings.Split(value, "=")[1]
-		}
-
-	}
-	return
 }
 
 func CallInteractive() (user string, pass string) {
