@@ -41,6 +41,9 @@ func ReadConfig(fileName string, flashbackInfo entity.FlashbackInfo) (entity.Fla
 			flashbackInfo.SetSshUser(strings.Split(value, ":")[0])
 			flashbackInfo.SetSshPass(strings.Split(value, ":")[1])
 		case "sshPort":
+			if strings.Trim(value, " ") == "" {
+				value = "22"
+			}
 			flashbackInfo.SetSshPort(value)
 		default:
 			break

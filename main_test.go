@@ -35,7 +35,7 @@ func TestM(t *testing.T) {
 	flag.StringVar(&targetSocket, "ti", "172.17.139.26:16320", "")
 	flag.StringVar(&compare, "c", "", "")
 	flag.StringVar(&locks, "m", "", "")
-	flag.StringVar(&fb, "f", "verify", "")
+	flag.StringVar(&fb, "f", "end", "")
 	flag.StringVar(&sshUser, "u", "", "")
 	flag.StringVar(&sshPass, "p", "", "")
 
@@ -81,6 +81,14 @@ func TestM(t *testing.T) {
 				log.Println("replication consistent check success!")
 			} else {
 				log.Println("replication consistent check failed!")
+			}
+
+			// verify a cluster is b cluster backup
+			_, err = flashback.VerifyBIsASlave(*f)
+			if err == nil {
+				log.Println("a -> b check success!")
+			} else {
+				log.Println("a -> b check failed!")
 			}
 
 		case "begin":

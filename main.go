@@ -78,6 +78,14 @@ func main() {
 				log.Println("replication consistent check failed!")
 			}
 
+			// verify a cluster is b cluster backup
+			_, err = flashback.VerifyBIsASlave(*f)
+			if err == nil {
+				log.Println("a -> b check success!")
+			} else {
+				log.Println("a -> b check failed!")
+			}
+
 		case "begin":
 			f := new(entity.FlashbackInfo)
 			f.SetSourceSocket(sourceSocket)

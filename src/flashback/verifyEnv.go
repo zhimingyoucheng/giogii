@@ -43,8 +43,47 @@ func VerifyFlashbackEnv(f entity.FlashbackInfo) (*entity.FlashbackInfo, error) {
 	return &f, nil
 }
 
-// 校验B集群是否是A集群的备集群
-// TODO
+func VerifyBIsASlave(f entity.FlashbackInfo) (string, error) {
+
+	source := mapper.CreateConn(f.SourceUserInfo(), f.SourceSocket(), "information_schema")
+	target := mapper.CreateConn(f.TargetUserInfo(), f.TargetSocket(), "information_schema")
+
+	defer func() {
+		source.DoClose()
+		target.DoClose()
+	}()
+
+	strSql := fmt.Sprint("dbscale show dataservers")
+	m := source.DoQueryParseToDataServers(strSql)
+
+	strSql = fmt.Sprint("show slave status")
+	slaveStatus := target.DoQueryParseSlave(strSql)
+
+	if len(m) == 0 {
+		return "", errors.New("fail")
+	}
+
+	var mIp string
+	for i := 0; i < len(m); i++ {
+		if strings.Contains(m[i].MasterOnlineStatus.String, "Master_Online") {
+			mIp = m[i].Host.String
+			break
+		}
+	}
+
+	if &slaveStatus == nil {
+		return "", errors.New("fail")
+	}
+
+	var sIp string
+	sIp = slaveStatus.MasterHost
+
+	if sIp != mIp {
+		return "", errors.New("fail")
+	}
+
+	return "", nil
+}
 
 func VerifyReplicationConsistent(f entity.FlashbackInfo) (string, error) {
 	var sqlScale mapper.SqlScaleOperator

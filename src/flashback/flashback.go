@@ -121,8 +121,8 @@ func AddBackupCluster(sourceUserInfo string, host string, port string, user stri
 
 func StartSlave() {
 	var strSql string
-	strSql = fmt.Sprint("dbscale set global 'enable-slave-dbscale-server'=1")
-	SlaveSqlMapper.DoQueryWithoutRes(strSql)
+	//strSql = fmt.Sprint("dbscale set global 'enable-slave-dbscale-server'=1")
+	//SlaveSqlMapper.DoQueryWithoutRes(strSql)
 	strSql = fmt.Sprint("dbscale set global 'slave-dbscale-mode'=1")
 	SlaveSqlMapper.DoQueryWithoutRes(strSql)
 	strSql = fmt.Sprint("start slave")
@@ -143,8 +143,8 @@ func CloseReplication() {
 	SlaveSqlMapper.DoQueryWithoutRes(strSql)
 	strSql = fmt.Sprint("dbscale set global 'slave-dbscale-mode'=0")
 	SlaveSqlMapper.DoQueryWithoutRes(strSql)
-	strSql = fmt.Sprint("dbscale set global 'enable-slave-dbscale-server'=0")
-	SlaveSqlMapper.DoQueryWithoutRes(strSql)
+	//strSql = fmt.Sprint("dbscale set global 'enable-slave-dbscale-server'=0")
+	//SlaveSqlMapper.DoQueryWithoutRes(strSql)
 }
 
 func GetSlaveGTIDSet() {

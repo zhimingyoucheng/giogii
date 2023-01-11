@@ -146,8 +146,9 @@ func DoEndFlashback(sourceUserInfo string, sourceSocket string, targetUserInfo s
 			"--gtid-set=\"%s\" "+
 			"-v  "+
 			"--end-position=%s --end-file=/data/mysqldata/%s/dbdata/%s", args[0], args[1], primaryPort, args[0], args[1], primaryPort, resSet, strconv.Itoa(*masterStatus.Position), result, masterStatus.File)
-		res, _ := primaryClient.Run(str)
+		res, err := primaryClient.Run(str)
 		if res == "" {
+			log.Println(err)
 			log.Println("闪回程序dbscale_binlog_tool出错")
 			os.Exit(-1)
 		}
@@ -189,5 +190,6 @@ func DoEndFlashback(sourceUserInfo string, sourceSocket string, targetUserInfo s
 	//	wg.Done()
 	//}()
 	//wg.Wait()
+	time.Sleep(3 * time.Second)
 	StartSlave()
 }
