@@ -46,9 +46,9 @@ func DoBeginFlashback(f entity.FlashbackInfo) {
 	*/
 	for {
 		GetSlaveGTIDSet()
-		log.Println("等待灾备集群回放Binlog")
+		log.Println("waiting for apply binlog")
 		if SlaveStatus.SecondsBehindMaster.Int64 == 0 {
-			log.Println("灾备集群回放Binlog完成", SlaveStatus.ExecutedGtidSet)
+			log.Println("apply binlog finished")
 			break
 		}
 		time.Sleep(3 * time.Second)
@@ -56,9 +56,7 @@ func DoBeginFlashback(f entity.FlashbackInfo) {
 
 	// 1.3 记录备集群GTID和POS位点信息，记录备集群拓扑关系、IP信息
 	masterStatus := GetPosAndSet()
-	log.Println(": ", masterStatus.File)
-	log.Println(": ", *masterStatus.Position)
-	log.Println(": ", masterStatus.ExecutedGtidSet)
+	log.Println("slave binlog gtid : ", masterStatus.ExecutedGtidSet)
 
 	// 1.4 关闭备集群只读参数，变为read write
 	CloseReadOnly()

@@ -35,7 +35,7 @@ func TestM(t *testing.T) {
 	flag.StringVar(&targetSocket, "ti", "172.17.139.26:16320", "")
 	flag.StringVar(&compare, "c", "", "")
 	flag.StringVar(&locks, "m", "", "")
-	flag.StringVar(&fb, "f", "begin", "")
+	flag.StringVar(&fb, "f", "verify", "")
 	flag.StringVar(&sshUser, "u", "", "")
 	flag.StringVar(&sshPass, "p", "", "")
 
@@ -66,7 +66,7 @@ func TestM(t *testing.T) {
 			f := new(entity.FlashbackInfo)
 			f.SetSourceSocket(sourceSocket)
 			f.SetTargetSocket(targetSocket)
-			flashback.VerifyFlashbackEnv(*f)
+			f, _ = flashback.VerifyFlashbackEnv(*f)
 			// verify cluster consistent
 			_, err := flashback.VerifyClusterConsistent(*f)
 			if err == nil {
@@ -87,7 +87,7 @@ func TestM(t *testing.T) {
 			f := new(entity.FlashbackInfo)
 			f.SetSourceSocket(sourceSocket)
 			f.SetTargetSocket(targetSocket)
-			flashback.VerifyFlashbackEnv(*f)
+			f, _ = flashback.VerifyFlashbackEnv(*f)
 			// verify cluster consistent
 			_, err := flashback.VerifyClusterConsistent(*f)
 			if err == nil {
@@ -100,13 +100,13 @@ func TestM(t *testing.T) {
 			f := new(entity.FlashbackInfo)
 			f.SetSourceSocket(sourceSocket)
 			f.SetTargetSocket(targetSocket)
-			flashback.VerifyFlashbackEnv(*f)
+			f, _ = flashback.VerifyFlashbackEnv(*f)
 			flashback.DoEndFlashback(f.SourceUserInfo(), f.SourceSocket(), f.TargetUserInfo(), f.TargetSocket(), f.SshUser(), f.SshPass())
 		case "start":
 			f := new(entity.FlashbackInfo)
 			f.SetSourceSocket(sourceSocket)
 			f.SetTargetSocket(targetSocket)
-			flashback.VerifyFlashbackEnv(*f)
+			f, _ = flashback.VerifyFlashbackEnv(*f)
 			// verify cluster consistent
 			_, err := flashback.VerifyClusterConsistent(*f)
 			if err == nil {
@@ -119,7 +119,7 @@ func TestM(t *testing.T) {
 			f := new(entity.FlashbackInfo)
 			f.SetSourceSocket(sourceSocket)
 			f.SetTargetSocket(targetSocket)
-			flashback.VerifyFlashbackEnv(*f)
+			f, _ = flashback.VerifyFlashbackEnv(*f)
 			flashback.DoStopFlashback(f.SourceUserInfo(), f.SourceSocket(), f.TargetUserInfo(), f.TargetSocket(), f.SshUser(), f.SshPass())
 		}
 	} else {

@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-func VerifyFlashbackEnv(f entity.FlashbackInfo) {
+func VerifyFlashbackEnv(f entity.FlashbackInfo) (*entity.FlashbackInfo, error) {
 
 	// 1) read config file
 	fileName := "gii.conf"
@@ -40,7 +40,11 @@ func VerifyFlashbackEnv(f entity.FlashbackInfo) {
 		log.Println("ssh check failed!")
 	}
 
+	return &f, nil
 }
+
+// 校验B集群是否是A集群的备集群
+// TODO
 
 func VerifyReplicationConsistent(f entity.FlashbackInfo) (string, error) {
 	var sqlScale mapper.SqlScaleOperator
@@ -87,6 +91,8 @@ func VerifyClusterConsistent(f entity.FlashbackInfo) (string, error) {
 		// get node binlog status
 		strSql := fmt.Sprint("show master status")
 		masterStatus := createConn.DoQueryParseMaster(strSql)
+
+		createConn.DoClose()
 
 		// get global transaction id
 		globalTransactionId := strings.ReplaceAll(masterStatus.ExecutedGtidSet, "\n", "")

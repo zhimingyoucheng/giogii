@@ -61,8 +61,7 @@ func main() {
 			f := new(entity.FlashbackInfo)
 			f.SetSourceSocket(sourceSocket)
 			f.SetTargetSocket(targetSocket)
-			flashback.VerifyFlashbackEnv(*f)
-
+			f, _ = flashback.VerifyFlashbackEnv(*f)
 			// verify cluster consistent
 			_, err := flashback.VerifyClusterConsistent(*f)
 			if err == nil {
@@ -83,7 +82,7 @@ func main() {
 			f := new(entity.FlashbackInfo)
 			f.SetSourceSocket(sourceSocket)
 			f.SetTargetSocket(targetSocket)
-			flashback.VerifyFlashbackEnv(*f)
+			f, _ = flashback.VerifyFlashbackEnv(*f)
 			// verify cluster consistent
 			_, err := flashback.VerifyClusterConsistent(*f)
 			if err == nil {
@@ -96,13 +95,13 @@ func main() {
 			f := new(entity.FlashbackInfo)
 			f.SetSourceSocket(sourceSocket)
 			f.SetTargetSocket(targetSocket)
-			flashback.VerifyFlashbackEnv(*f)
+			f, _ = flashback.VerifyFlashbackEnv(*f)
 			flashback.DoEndFlashback(f.SourceUserInfo(), f.SourceSocket(), f.TargetUserInfo(), f.TargetSocket(), f.SshUser(), f.SshPass())
 		case "start":
 			f := new(entity.FlashbackInfo)
 			f.SetSourceSocket(sourceSocket)
 			f.SetTargetSocket(targetSocket)
-			flashback.VerifyFlashbackEnv(*f)
+			f, _ = flashback.VerifyFlashbackEnv(*f)
 			// verify cluster consistent
 			_, err := flashback.VerifyClusterConsistent(*f)
 			if err == nil {
@@ -115,7 +114,7 @@ func main() {
 			f := new(entity.FlashbackInfo)
 			f.SetSourceSocket(sourceSocket)
 			f.SetTargetSocket(targetSocket)
-			flashback.VerifyFlashbackEnv(*f)
+			f, _ = flashback.VerifyFlashbackEnv(*f)
 			flashback.DoStopFlashback(f.SourceUserInfo(), f.SourceSocket(), f.TargetUserInfo(), f.TargetSocket(), f.SshUser(), f.SshPass())
 		}
 	} else {
