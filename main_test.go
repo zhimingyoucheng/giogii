@@ -72,8 +72,17 @@ func TestM(t *testing.T) {
 			if err == nil {
 				log.Println("cluster consistent check success!")
 			} else {
-				os.Exit(-1)
+				log.Println("cluster consistent check failed!")
 			}
+
+			// verify replication consistent
+			_, err = flashback.VerifyReplicationConsistent(*f)
+			if err == nil {
+				log.Println("replication consistent check success!")
+			} else {
+				log.Println("replication consistent check failed!")
+			}
+
 		case "begin":
 			f := new(entity.FlashbackInfo)
 			f.SetSourceSocket(sourceSocket)
@@ -84,9 +93,9 @@ func TestM(t *testing.T) {
 			if err == nil {
 				log.Println("cluster consistent check success!")
 			} else {
-				os.Exit(-1)
+				log.Println("cluster consistent check failed!")
 			}
-			flashback.DoBeginFlashback(f.SourceUserInfo(), f.SourceSocket(), f.TargetUserInfo(), f.TargetSocket())
+			flashback.DoBeginFlashback(*f)
 		case "end":
 			f := new(entity.FlashbackInfo)
 			f.SetSourceSocket(sourceSocket)

@@ -62,13 +62,23 @@ func main() {
 			f.SetSourceSocket(sourceSocket)
 			f.SetTargetSocket(targetSocket)
 			flashback.VerifyFlashbackEnv(*f)
+
 			// verify cluster consistent
 			_, err := flashback.VerifyClusterConsistent(*f)
 			if err == nil {
 				log.Println("cluster consistent check success!")
 			} else {
-				os.Exit(-1)
+				log.Println("cluster consistent check failed!")
 			}
+
+			// verify replication consistent
+			_, err = flashback.VerifyReplicationConsistent(*f)
+			if err == nil {
+				log.Println("replication consistent check success!")
+			} else {
+				log.Println("replication consistent check failed!")
+			}
+
 		case "begin":
 			f := new(entity.FlashbackInfo)
 			f.SetSourceSocket(sourceSocket)
@@ -79,9 +89,9 @@ func main() {
 			if err == nil {
 				log.Println("cluster consistent check success!")
 			} else {
-				os.Exit(-1)
+				log.Println("cluster consistent check failed!")
 			}
-			flashback.DoBeginFlashback(f.SourceUserInfo(), f.SourceSocket(), f.TargetUserInfo(), f.TargetSocket())
+			flashback.DoBeginFlashback(*f)
 		case "end":
 			f := new(entity.FlashbackInfo)
 			f.SetSourceSocket(sourceSocket)

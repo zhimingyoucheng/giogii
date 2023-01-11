@@ -26,9 +26,10 @@ func SaveInfo(gtid string) int64 {
 	return count
 }
 
-func DoBeginFlashback(sourceUserInfo string, sourceSocket string, targetUserInfo string, targetSocket string) {
-	InitMasterConnection(sourceUserInfo, sourceSocket)
-	InitSlaveConnection(targetUserInfo, targetSocket)
+func DoBeginFlashback(f entity.FlashbackInfo) {
+
+	InitMasterConnection(f.SourceUserInfo(), f.SourceSocket())
+	InitSlaveConnection(f.TargetUserInfo(), f.TargetSocket())
 
 	defer func() {
 		SlaveSqlMapper.DoClose()

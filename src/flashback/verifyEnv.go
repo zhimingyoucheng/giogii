@@ -18,15 +18,52 @@ func VerifyFlashbackEnv(f entity.FlashbackInfo) {
 	log.Printf("%s check success!", fileName)
 
 	// 2) verify source and target parameter
-	verifyDbConn(f.SourceUserInfo(), f.SourceSocket())
-	log.Println("sourceDataSource check success!")
+	_, err := verifyDbConn(f.SourceUserInfo(), f.SourceSocket())
+	if err == nil {
+		log.Println("sourceDataSource check success!")
+	} else {
+		log.Println("sourceDataSource check failed!")
+	}
 
-	verifyDbConn(f.TargetUserInfo(), f.TargetSocket())
-	log.Println("targetDataSource check success!")
+	_, err = verifyDbConn(f.TargetUserInfo(), f.TargetSocket())
+	if err == nil {
+		log.Println("targetDataSource check success!")
+	} else {
+		log.Println("targetDataSource check failed!")
+	}
 
-	verifySsh(f.TargetUserInfo(), f.TargetSocket(), f.SshUser(), f.SshPass(), f.SshPort())
-	log.Println("ssh check success!")
+	_, err = verifySsh(f.TargetUserInfo(), f.TargetSocket(), f.SshUser(), f.SshPass(), f.SshPort())
+	if err == nil {
+		log.Println("ssh check success!")
+	} else {
+		log.Println(err)
+		log.Println("ssh check failed!")
+	}
 
+}
+
+func VerifyReplicationConsistent(f entity.FlashbackInfo) (string, error) {
+	var sqlScale mapper.SqlScaleOperator
+	defer func() {
+		sqlScale.DoClose()
+	}()
+	conn := mapper.CreateConn(f.TargetUserInfo(), f.TargetSocket(), "information_schema")
+	sqlScale = &conn
+	strSql := fmt.Sprint("dbscale show dataservers")
+	m := sqlScale.DoQueryParseToDataServers(strSql)
+	if len(m) == 0 {
+		return "", errors.New("fail")
+	}
+
+	for i := 0; i < len(m); i++ {
+		if strings.Contains(m[i].Servername.String, "server") { // contains backup cluster server
+			status := m[i].Status.String
+			if status != "" && strings.Contains(status, "down") {
+				return "", errors.New("fail")
+			}
+		}
+	}
+	return "", nil
 }
 
 func VerifyClusterConsistent(f entity.FlashbackInfo) (string, error) {
@@ -59,21 +96,21 @@ func VerifyClusterConsistent(f entity.FlashbackInfo) (string, error) {
 		s = append(s, myMap)
 	}
 
-	if len(s) == 2 {
+	switch len(s) {
+	case 2:
 		if s[0]["id"] != s[1]["id"] {
-			log.Printf("%s node compare %s node error", s[0]["ip"], s[1]["ip"])
-			return "", errors.New("fail")
+			return "", errors.New(fmt.Sprintf("%s node compare %s node error", s[0]["ip"], s[1]["ip"]))
 		}
-	} else if len(s) == 3 {
+	case 3:
 		if s[0]["id"] != s[1]["id"] || s[1]["id"] != s[2]["id"] || s[0]["id"] != s[2]["id"] {
-			log.Printf("%s node compare %s or %s node error", s[0]["ip"], s[1]["ip"], s[2]["ip"])
-			return "", errors.New("fail")
+			return "", errors.New(fmt.Sprintf("%s node compare %s or %s node error", s[0]["ip"], s[1]["ip"], s[2]["ip"]))
 		}
 	}
+
 	return "", nil
 }
 
-func verifyDbConn(userInfo string, socket string) {
+func verifyDbConn(userInfo string, socket string) (string, error) {
 	var sqlScale mapper.SqlScaleOperator
 	defer func() {
 		sqlScale.DoClose()
@@ -81,7 +118,12 @@ func verifyDbConn(userInfo string, socket string) {
 	conn := mapper.InitSourceConn(userInfo, socket, "information_schema")
 	sqlScale = &conn
 	sqlStr := "select 1"
-	sqlScale.DoQueryWithoutRes(sqlStr)
+	value := sqlScale.DoQueryParseSingleValue(sqlStr)
+	if value == "1" {
+		return "", nil
+	} else {
+		return "", errors.New("fail")
+	}
 }
 
 func getIp(sqlScale *mapper.SqlScaleOperator) (s []map[string]string) {
@@ -99,7 +141,7 @@ func getIp(sqlScale *mapper.SqlScaleOperator) (s []map[string]string) {
 	return s
 }
 
-func verifySsh(userInfo string, socket string, sshUser string, sshPass string, sshPort string) {
+func verifySsh(userInfo string, socket string, sshUser string, sshPass string, sshPort string) (string, error) {
 	var sqlScale mapper.SqlScaleOperator
 	defer func() {
 		sqlScale.DoClose()
@@ -116,8 +158,10 @@ func verifySsh(userInfo string, socket string, sshUser string, sshPass string, s
 		}
 		_, err := cli.Connect()
 		if err != nil {
-			log.Printf("ssh ip %s check failed!", ips[i])
+			return "", errors.New(fmt.Sprintf("ssh ip %s check failed!", ips[i]))
 		}
 	}
+
+	return "", nil
 
 }
