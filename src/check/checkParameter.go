@@ -12,18 +12,18 @@ var ClusterParameter mapper.SqlScaleOperator
 var TargetSocket string
 
 func InitCheckParameterConf(sourceUserInfo string, sourceSocket string, sourceDatabase string, targetUserInfo string, targetSocket string, targetDatabase string) {
-	s, t := mapper.InitConfig(sourceUserInfo, sourceSocket, sourceDatabase, targetUserInfo, targetSocket, targetDatabase)
+	s, t := mapper.InitAllConn(sourceUserInfo, sourceSocket, sourceDatabase, targetUserInfo, targetSocket, targetDatabase)
 	BaseParameter = &s
 	ClusterParameter = &t
 	TargetSocket = targetSocket
 }
 
-func DoCheckParameter() {
+func DoCheckParameter(template string) {
 	// select name,value,type from configuration_items where configuration_id = "d992bc11-fe27-4e03-a355-4ed325c7ca23";
 	// init base template
 	// select i.name,i.value,i.type from configuration_items as i inner join configuration as c on c.uuid = i.configuration_id where c.name = "base";
 	var strSql = "select i.name,i.value,i.type from configuration_items as i inner join configuration as c on c.uuid = i.configuration_id where c.name = ?"
-	configuration := BaseParameter.DoQueryParseParameter(strSql, "base")
+	configuration := BaseParameter.DoQueryParseParameter(strSql, template)
 	for i := 0; i < len(configuration); i++ {
 		switch tp := configuration[i].Type; tp {
 		case "dbscale":
@@ -53,6 +53,19 @@ func DoCheckParameter() {
 
 			case "federated":
 
+			case "ssl":
+				strSql = fmt.Sprintf("show variables like '%s'", "have_openssl")
+				value := strings.ToLower(ClusterParameter.DoQueryParseValue(strSql))
+				baseValue := strings.ToLower(configuration[i].Value)
+				if value == "disabled" {
+					value = "off"
+				} else if value == "yes" {
+					value = "on"
+				}
+
+				if value != baseValue {
+					log.Println(fmt.Sprintf("[实例 %s]参数：%s 基准值为：%s,实际值为：%s", TargetSocket, configuration[i].Name, configuration[i].Value, value))
+				}
 			case "default-time-zone":
 				configuration[i].Name = "time_zone"
 				fallthrough
@@ -95,4 +108,9 @@ func DoCheckParameter() {
 			}
 		}
 	}
+
+	defer func() {
+		BaseParameter.DoClose()
+		ClusterParameter.DoClose()
+	}()
 }

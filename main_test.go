@@ -1,9 +1,7 @@
 package main
 
 import (
-	"bufio"
 	"flag"
-	"fmt"
 	"giogii/src/check"
 	"giogii/src/entity"
 	"giogii/src/flashback"
@@ -11,9 +9,10 @@ import (
 	"log"
 	"os"
 	"strings"
+	"testing"
 )
 
-func main() {
+func TestM(t *testing.T) {
 	var sourceUserInfo string
 	var sourceSocket string
 	var targetUserInfo string
@@ -24,13 +23,19 @@ func main() {
 	var sshUser string
 	var sshPass string
 
+	/*flag.StringVar(&sourceUserInfo, "s", "root:drACgwoqtM", "")
+	flag.StringVar(&sourceSocket, "si", "172.17.128.49:13336", "")
+	flag.StringVar(&targetUserInfo, "t", "wjy_root:Wjy123456", "")
+	flag.StringVar(&targetSocket, "ti", "rm-2ze5j9oqx3x70jzd94o.mysql.rds.aliyuncs.com:3306", "")
+	flag.StringVar(&parameter, "c", "8c32gb", "")*/
+
 	flag.StringVar(&sourceUserInfo, "s", "", "")
-	flag.StringVar(&sourceSocket, "si", "", "")
+	flag.StringVar(&sourceSocket, "si", "172.17.139.26:16310", "")
 	flag.StringVar(&targetUserInfo, "t", "", "")
-	flag.StringVar(&targetSocket, "ti", "", "")
+	flag.StringVar(&targetSocket, "ti", "172.17.139.26:16320", "")
 	flag.StringVar(&compare, "c", "", "")
 	flag.StringVar(&locks, "m", "", "")
-	flag.StringVar(&fb, "f", "", "")
+	flag.StringVar(&fb, "f", "end", "")
 	flag.StringVar(&sshUser, "u", "", "")
 	flag.StringVar(&sshPass, "p", "", "")
 
@@ -134,31 +139,4 @@ func main() {
 		check.DoCheck()
 	}
 
-}
-
-func CallInteractive() (user string, pass string) {
-	reader := bufio.NewReader(os.Stdin)
-	for {
-		fmt.Print("$ ")
-		cmdString, err := reader.ReadString('\n')
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-		}
-
-		cmdString = strings.TrimSuffix(cmdString, "\n")
-		//cmd := exec.Command(cmdString)
-		//cmd.Stderr = os.Stderr
-		//cmd.Stdout = os.Stdout
-		//err = cmd.Run()
-		//if err != nil {
-		//	fmt.Fprintln(os.Stderr, err)
-		//}
-		if user == "" {
-			user = cmdString
-		} else {
-			pass = cmdString
-			return
-		}
-
-	}
 }
